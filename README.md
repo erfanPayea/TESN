@@ -1,2 +1,2 @@
-# TSEN
-A program for Share Trip Experience
+# TSEN 
+Trip Experience Social Network
