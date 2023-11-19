@@ -8,6 +8,7 @@ from rest_framework import status
 from . import serializers
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.models import Token as RestToken
+from rest_framework.permissions import IsAuthenticated
 
 
 class Users(APIView):
@@ -49,3 +50,18 @@ class Token(APIView):
         token, created = RestToken.objects.get_or_create(user=user)
 
         return Response({"token": token.key}, status.HTTP_200_OK)
+
+class Follow(APIView):
+    Serializer = serializers.Fallowing
+    Model = models.Followers
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, user_id):
+        toBeFollowed = models.User.objects.filter(id=user_id)
+
+        if toBeFollowed is None:
+            return Response({}, status.HTTP_404_NOT_FOUND)
+        else:
+            newFollowing = models.Followers(follower=request.user, following=toBeFollowed)
+            newFollowing.save()
+            return Response({}, status.HTTP_200_OK)

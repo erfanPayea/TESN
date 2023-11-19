@@ -2,6 +2,12 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework.serializers import ValidationError
 from . import models
 
+class Fallowing(ModelSerializer):
+    class Meta:
+        models = models.Followers
+        fields = '__all__'
+
+
 # class TestApi(ModelSerializer):
 #
 #     class Meta:
