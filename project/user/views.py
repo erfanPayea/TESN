@@ -1,6 +1,4 @@
 from django.shortcuts import render
-
-# Create your views here.
 from . import models
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -10,9 +8,11 @@ from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.models import Token as RestToken
 from rest_framework.permissions import IsAuthenticated
 
+# Create your views here.
+
 
 class Users(APIView):
-    permission_classes =()
+    permission_classes = ()
 
     def post(self, request):
 
@@ -45,11 +45,13 @@ class Token(APIView):
         }
 
         se = AuthTokenSerializer(data=data, context={"request": request})
-        se.is_valid(raise_exception=True)
-        user = se.validated_data["user"]
-        token, created = RestToken.objects.get_or_create(user=user)
+        if se.is_valid():
+            user = se.validated_data["user"]
+            token, created = RestToken.objects.get_or_create(user=user)
+            return Response({"token": token.key}, status.HTTP_200_OK)
+        else:
+            return Response({}, status.HTTP_401_UNAUTHORIZED)
 
-        return Response({"token": token.key}, status.HTTP_200_OK)
 
 class Following(APIView):
     Serializer = serializers.Fallowing
@@ -57,17 +59,17 @@ class Following(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        toBeFollowed = models.User.objects.filter(id=request.data("user_id"))
+        to_be_followed = models.User.objects.filter(id=request.data("user_id"))
 
-        if toBeFollowed is None:
+        if to_be_followed is None:
             return Response({}, status.HTTP_404_NOT_FOUND)
         else:
-            newFollowing = models.Followers(follower=request.user, following=toBeFollowed)
-            newFollowing.save()
+            new_following = models.Followers(follower=request.user, following=to_be_followed)
+            new_following.save()
             return Response({}, status.HTTP_200_OK)
 
     def get(self, request):
-        all_fallowing = models.Followers(fallower=request.user).all()
+        all_fallowing = models.Followers.objects.filter(fallower=request.user).all()
         serialized = self.Serializer(all_fallowing, many=True)
         if serialized.is_valid():
             serialized.save()
@@ -76,13 +78,14 @@ class Following(APIView):
             return Response({}, status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
-        toBeUnfollowed = models.User.objects.filter(id=request.data("user_id"))
+        to_be_unfollowed = models.User.objects.filter(id=request.data("user_id"))
 
-        if toBeUnfollowed is None:
+        if to_be_unfollowed is None:
             return Response({}, status.HTTP_404_NOT_FOUND)
         else:
-            toBeUnfollowed.delete()
+            to_be_unfollowed.delete()
             return Response({}, status.HTTP_200_OK)
+
 
 class Followers(APIView):
     Serializer = serializers.Fallowing
@@ -90,11 +93,10 @@ class Followers(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        all_fallowing = models.Followers(fallowing=request.user).all()
+        all_fallowing = models.Followers.objects.filter(fallowing=request.user).all()
         serialized = self.Serializer(all_fallowing, many=True)
         if serialized.is_valid():
             serialized.save()
             return Response(serialized.data, status.HTTP_200_OK)
         else:
             return Response({}, status.HTTP_400_BAD_REQUEST)
-
