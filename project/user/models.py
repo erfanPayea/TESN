@@ -6,7 +6,6 @@ from django.db import models
 
 class User(AbstractUser):
     phone = models.CharField(max_length=13)
-    test = models.CharField(max_length=256)
     birth_date = models.DateField(null=True)
     date_joined = models.DateField(auto_now=True)
 

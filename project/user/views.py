@@ -19,6 +19,10 @@ class Users(APIView):
         username = request.data["username"]
         password = request.data["password"]
         phone = request.data["phone"]
+        duplicate_user = models.User.objects.filter(username=username).first()
+
+        if not duplicate_user is None:
+            return Response({}, status.HTTP_400_BAD_REQUEST)
 
         user = models.User.objects.create_user(username=username, phone=phone, is_staff=True, password=password)
         user.save()
