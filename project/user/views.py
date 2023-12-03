@@ -4,9 +4,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from . import serializers
+from .utils import generate_otp, send_otp_email
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.models import Token as RestToken
 from rest_framework.permissions import IsAuthenticated
+from datetime import datetime, timedelta
 
 # Create your views here.
 
@@ -19,17 +21,20 @@ class Users(APIView):
         username = request.data["username"]
         password = request.data["password"]
         phone = request.data["phone"]
+        email = request.data["email"]
         duplicate_user = models.User.objects.filter(username=username).first()
 
         if not duplicate_user is None:
-            return Response({}, status.HTTP_400_BAD_REQUEST)
+            return Response({'error':'username already exists'}, status.HTTP_400_BAD_REQUEST)
 
         user = models.User.objects.create_user(username=username, phone=phone, is_staff=True, password=password)
         user.save()
+        models.Opt(user=user, passkey=generate_otp()).save()
+        send_otp_email(email, otp)
 
-        token, created = RestToken.objects.get_or_create(user=user)
+        # token, created = RestToken.objects.get_or_create(user=user)
 
-        return Response({"token": token.key}, status.HTTP_200_OK)
+        return Response({}, status.HTTP_200_OK)
 
         # return Response({}, status.HTTP_204_NO_CONTENT)
         # print("POST")
@@ -104,3 +109,41 @@ class Followers(APIView):
             return Response(serialized.data, status.HTTP_200_OK)
         else:
             return Response({}, status.HTTP_400_BAD_REQUEST)
+
+class otp(APIView):
+    def post(self, request):
+        email = request.data["email"]
+        otp_key = email = request.data["otp"]
+
+        try:
+            user = models.User.objects.get(email=email)
+        except models.User.DoesNotExist:
+            return Response({'error': 'User with this email does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+        if user.otp.passkey is None:
+            return Response({'error': 'invalid otp.'}, status=status.HTTP_400_BAD_REQUEST)
+        if user.otp.passkey != otp:
+            return Response({'error': 'incorrect OTP.'}, status=status.HTTP_400_BAD_REQUEST)
+        if datetime.now() - user.otp.created_at > timedelta(minutes=2):
+            return Response({'error': 'passkey has been expired.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.otp.passkey = None
+        user.save()
+
+        token, created = RestToken.objects.get_or_create(user=user)
+        return Response({'token': token.key}, status=status.HTTP_200_OK)
+
+    def patch(self, request):
+        email = request.data["email"]
+        try:
+            user = models.User.objects.get(email=email)
+        except models.User.DoesNotExist:
+            return Response({'error': 'User with this email does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if datetime.now() - user.otp.created_at <= timedelta(minutes=2):
+            return Response({'error': 'wait 2 minutes.'}, status=status.HTTP_400_BAD_REQUEST)
+        models.Opt(user=user, passkey=generate_otp()).save()
+        send_otp_email(email, otp)
+        
+        return Response({}, status.HTTP_200_OK)
+
+

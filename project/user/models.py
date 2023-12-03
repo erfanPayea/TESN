@@ -10,6 +10,13 @@ class User(AbstractUser):
     date_joined = models.DateField(auto_now=True)
 
 
+class Opt(models.Model):
+    passkey = models.CharField(max_length=6, null=True)
+    created_at = models.DateTimeField(auto_now=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+
+
+
 class Followers(models.Model):
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followers')
     following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followings')
