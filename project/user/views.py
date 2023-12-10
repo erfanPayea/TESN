@@ -1,3 +1,5 @@
+import random
+
 from django.shortcuts import render
 from . import models
 from rest_framework.views import APIView
@@ -15,27 +17,20 @@ from django.utils import timezone
 
 
 class Users(APIView):
-    permission_classes = ()
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request):
+        try:
+            username = request.data["username"]
+            password = request.data["password"]
+            phone = request.data["phone"]
+        except:
+            return Response({'error': 'provide necessary arguments.'}, status=status.HTTP_404_NOT_FOUND)
 
-        username = request.data["username"]
-        password = request.data["password"]
-        phone = request.data["phone"]
-        email = request.data["email"]
-
-        duplicate_email = models.User.objects.filter(email=email).first()
-        if models.User.objects.filter(username=username).first() is not None:
-            return Response({'error':'username already exists'}, status.HTTP_400_BAD_REQUEST)
-        if models.User.objects.filter(email=email).first() is not None:
-            return Response({'error':'email already exists'}, status.HTTP_400_BAD_REQUEST)
-
-        user = models.User.objects.create_user(username=username, phone=phone, is_staff=True, password=password, email=email)
-        user.save()
-        otp_passkey = generate_otp()
-        models.Otp(user=user, passkey=otp_passkey).save()
-        send_otp_email(email, otp_passkey)
-
+        request.user.username = username
+        request.user.password = password
+        request.user.phone = phone
+        request.user.save()
         # token, created = RestToken.objects.get_or_create(user=user)
 
         return Response({}, status.HTTP_200_OK)
@@ -51,11 +46,13 @@ class Users(APIView):
 
 class Token(APIView):
     def post(self, request):
-
-        data = {
-            "username": request.data["username"],
-            "password": request.data["password"]
-        }
+        try:
+            data = {
+                "username": request.data["username"],
+                "password": request.data["password"]
+            }
+        except:
+            return Response({'error': 'provide necessary arguments.'}, status=status.HTTP_404_NOT_FOUND)
 
         se = AuthTokenSerializer(data=data, context={"request": request})
         if se.is_valid():
@@ -117,8 +114,58 @@ class Followers(APIView):
 
 class otp(APIView):
     def post(self, request):
-        email = request.data["email"]
-        otp_key = request.data["otp"]
+        try:
+            email = request.data["email"]
+        except:
+            return Response({'error': 'provide valid email.'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            username = request.data["username"]
+        except:
+            username = "user" + str(models.User.objects.latest('id').id + 1)
+
+        duplicate_email = models.User.objects.filter(email=email).first()
+        if models.User.objects.filter(username=username).first() is not None:
+            return Response({'error': 'username already exists'}, status.HTTP_400_BAD_REQUEST)
+        if models.User.objects.filter(email=email).first() is not None:
+            return Response({'error': 'email already exists'}, status.HTTP_400_BAD_REQUEST)
+
+        user = models.User.objects.create_user(username=username, email=email)
+        user.save()
+        otp_passkey = generate_otp()
+        models.Otp(user=user, passkey=otp_passkey).save()
+        send_otp_email(email, otp_passkey)
+        return Response({}, status.HTTP_200_OK)
+
+
+    def patch(self, request):
+        try:
+            email = request.data["email"]
+        except:
+            return Response({'error': 'provide necessary arguments.'}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            user = models.User.objects.get(email=email)
+        except models.User.DoesNotExist:
+            return Response({'error': 'User with this email does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if (timezone.now() - user.otp.created_at).total_seconds() < 120:
+            return Response({'error': 'wait 2 minutes.'}, status=status.HTTP_400_BAD_REQUEST)
+        otp_passkey = generate_otp()
+        user.otp.passkey = otp_passkey
+        user.otp.save()
+        send_otp_email(email, otp_passkey)
+        
+        return Response({}, status.HTTP_200_OK)
+
+
+class otpValidaitor(APIView):
+
+    def post(self, request):
+        try:
+            email = request.data["email"]
+            otp_key = request.data["otp"]
+        except:
+            return Response({'error': 'provide necessary arguments.'}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             user = models.User.objects.get(email=email)
@@ -132,23 +179,7 @@ class otp(APIView):
             return Response({'error': 'passkey has been expired.'}, status=status.HTTP_400_BAD_REQUEST)
 
         user.otp.passkey = None
-        user.save()
+        user.otp.save()
 
         token, created = RestToken.objects.get_or_create(user=user)
         return Response({'token': token.key}, status=status.HTTP_200_OK)
-
-    def patch(self, request):
-        email = request.data["email"]
-        try:
-            user = models.User.objects.get(email=email)
-        except models.User.DoesNotExist:
-            return Response({'error': 'User with this email does not exist.'}, status=status.HTTP_404_NOT_FOUND)
-
-        if (timezone.now() - user.otp.created_at).total_seconds() < 120:
-            return Response({'error': 'wait 2 minutes.'}, status=status.HTTP_400_BAD_REQUEST)
-        models.Otp(user=user, passkey=generate_otp()).save()
-        send_otp_email(email, otp)
-        
-        return Response({}, status.HTTP_200_OK)
-
-

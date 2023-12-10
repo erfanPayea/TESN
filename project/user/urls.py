@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
     path('', views.Users.as_view()),
     path('otp/', views.otp.as_view()),
+    path('otp/validaitor/', views.otpValidaitor.as_view()),
     path('token/', views.Token.as_view()),
     path('following/', views.Following.as_view()),
     path('followers/', views.Followers.as_view())
