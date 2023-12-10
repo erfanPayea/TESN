@@ -4,11 +4,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from . import serializers
-from .utils import generate_otp, send_otp_email
+from .otp import generate_otp, send_otp_email
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.models import Token as RestToken
 from rest_framework.permissions import IsAuthenticated
 from datetime import datetime, timedelta
+from django.utils import timezone
 
 # Create your views here.
 
@@ -22,15 +23,18 @@ class Users(APIView):
         password = request.data["password"]
         phone = request.data["phone"]
         email = request.data["email"]
-        duplicate_user = models.User.objects.filter(username=username).first()
 
-        if not duplicate_user is None:
+        duplicate_email = models.User.objects.filter(email=email).first()
+        if models.User.objects.filter(username=username).first() is not None:
             return Response({'error':'username already exists'}, status.HTTP_400_BAD_REQUEST)
+        if models.User.objects.filter(email=email).first() is not None:
+            return Response({'error':'email already exists'}, status.HTTP_400_BAD_REQUEST)
 
-        user = models.User.objects.create_user(username=username, phone=phone, is_staff=True, password=password)
+        user = models.User.objects.create_user(username=username, phone=phone, is_staff=True, password=password, email=email)
         user.save()
-        models.Opt(user=user, passkey=generate_otp()).save()
-        send_otp_email(email, otp)
+        otp_passkey = generate_otp()
+        models.Otp(user=user, passkey=otp_passkey).save()
+        send_otp_email(email, otp_passkey)
 
         # token, created = RestToken.objects.get_or_create(user=user)
 
@@ -110,10 +114,11 @@ class Followers(APIView):
         else:
             return Response({}, status.HTTP_400_BAD_REQUEST)
 
+
 class otp(APIView):
     def post(self, request):
         email = request.data["email"]
-        otp_key = email = request.data["otp"]
+        otp_key = request.data["otp"]
 
         try:
             user = models.User.objects.get(email=email)
@@ -121,9 +126,9 @@ class otp(APIView):
             return Response({'error': 'User with this email does not exist.'}, status=status.HTTP_404_NOT_FOUND)
         if user.otp.passkey is None:
             return Response({'error': 'invalid otp.'}, status=status.HTTP_400_BAD_REQUEST)
-        if user.otp.passkey != otp:
+        if user.otp.passkey != otp_key:
             return Response({'error': 'incorrect OTP.'}, status=status.HTTP_400_BAD_REQUEST)
-        if datetime.now() - user.otp.created_at > timedelta(minutes=2):
+        if (timezone.now() - user.otp.created_at).total_seconds() > 3600:
             return Response({'error': 'passkey has been expired.'}, status=status.HTTP_400_BAD_REQUEST)
 
         user.otp.passkey = None
@@ -139,9 +144,9 @@ class otp(APIView):
         except models.User.DoesNotExist:
             return Response({'error': 'User with this email does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
-        if datetime.now() - user.otp.created_at <= timedelta(minutes=2):
+        if (timezone.now() - user.otp.created_at).total_seconds() < 120:
             return Response({'error': 'wait 2 minutes.'}, status=status.HTTP_400_BAD_REQUEST)
-        models.Opt(user=user, passkey=generate_otp()).save()
+        models.Otp(user=user, passkey=generate_otp()).save()
         send_otp_email(email, otp)
         
         return Response({}, status.HTTP_200_OK)
