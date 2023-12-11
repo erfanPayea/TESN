@@ -26,6 +26,11 @@ class Message(APIView):
             return Response({}, status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, chat_id):
+
+        try:
+            content = request.data["content"]
+        except:
+            return Response({}, status.HTTP_400_BAD_REQUEST)
         chat = models.Chat.objects.filter(id=chat_id).first()
         if chat is None:
             return Response({}, status.HTTP_400_BAD_REQUEST)

@@ -2,9 +2,9 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework.serializers import ValidationError
 from . import models
 
-class Fallowing(ModelSerializer):
+class Follower(ModelSerializer):
     class Meta:
-        models = models.Followers
+        model = models.Followers
         fields = '__all__'
 
 
