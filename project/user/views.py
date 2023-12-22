@@ -1,21 +1,15 @@
-import random
-
-from django.shortcuts import render
-from . import models
-from . import errors
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from django.utils import timezone
 from rest_framework import status
+from rest_framework.authtoken.models import Token as RestToken
+from rest_framework.authtoken.serializers import AuthTokenSerializer
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from . import errors
+from . import models
 from . import serializers
 from .otp import generate_otp, send_otp_email
-from rest_framework.authtoken.serializers import AuthTokenSerializer
-from rest_framework.authtoken.models import Token as RestToken
-from rest_framework.permissions import IsAuthenticated
-from datetime import datetime, timedelta
-from django.utils import timezone
-
-
-# Create your views here.
 
 
 class Users(APIView):
@@ -149,7 +143,7 @@ class otp(APIView):
         return Response({}, status.HTTP_200_OK)
 
 
-class Otpvalidaitor(APIView):
+class OtpValidator(APIView):
 
     def post(self, request):
         try:
