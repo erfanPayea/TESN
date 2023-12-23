@@ -1,6 +1,6 @@
 from django.db import models
 
-from project.user import models as user_models
+from user import models as user_models
 
 
 class City(models.Model):
@@ -11,11 +11,11 @@ class City(models.Model):
 class Attraction(models.Model):
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=500)
-    city = models.ForeignKey(City, on_delete=models.SET_NULL)
+    city = models.ForeignKey(City, null=True, on_delete=models.SET_NULL)
     path = models.CharField(max_length=50)
 
 
-class Post(models.Model):
+class Experience(models.Model):
     owner = models.ForeignKey(user_models.User, on_delete=models.CASCADE)
     attraction = models.ForeignKey(Attraction, null=True, on_delete=models.SET_NULL)
     sent_time = models.DateTimeField(auto_now=True)
@@ -23,8 +23,16 @@ class Post(models.Model):
     caption = models.CharField(max_length=500)
     number_of_likes = models.PositiveIntegerField()
 
+    class Meta:
+        abstract = True
 
-class Review(Post):
+
+class Post(Experience):
+    pass
+
+
+class Review(Experience):
+    owner = models.ForeignKey(user_models.User, null=True, on_delete=models.SET_NULL)
     attraction = models.ForeignKey(Attraction, null=False, on_delete=models.CASCADE)
 
 
@@ -35,11 +43,20 @@ class Comment(models.Model):
     number_of_likes = models.PositiveIntegerField()
 
 
-class LikePost(models.Model):
-    owner = models.ForeignKey(user_models.User, on_delete=models.CASCADE)
+class Like(models.Model):
+    owner = models.ForeignKey(user_models.User,null=True, on_delete=models.SET_NULL)
+
+    class Meta:
+        abstract = True
+
+
+class LikePost(Like):
     destination_post = models.ForeignKey(Post, on_delete=models.CASCADE)
 
 
-class LikeComment(models.Model):
-    owner = models.ForeignKey(user_models.User, on_delete=models.CASCADE)
+class LikeReview(Like):
+    destination_review = models.ForeignKey(Review, on_delete=models.CASCADE)
+
+
+class LikeComment(Like):
     destination_comment = models.ForeignKey(Comment, on_delete=models.CASCADE)

@@ -1,5 +1,5 @@
 from django.db import models
-from project.user import models as user_models
+from user import models as user_models
 
 # Create your models here
 
