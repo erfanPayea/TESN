@@ -5,13 +5,15 @@ from rest_framework.response import Response
 from rest_framework import status
 from . import serializers
 from rest_framework.permissions import IsAuthenticated
+
+
 # Create your views here.
 
 
 class Message(APIView):
     Serializer = serializers.Message
     Model = models.Message
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, chat_id):
         messages_in_chat = models.Chat.objects.filter(id=chat_id).messages.all()
@@ -35,8 +37,8 @@ class Message(APIView):
         if chat is None:
             return Response({}, status.HTTP_400_BAD_REQUEST)
 
-        new_message = models.Message(chat=chat, sender=request.user, content= request.content)
-        new_message.save()
+        new_message = models.Message(chat=chat, sender=request.user, content=request.content)
+        new_message.save()  # todo: A message from Erfan: Is not better to save after validation ?
 
         serialized = self.Serializer(new_message)
         if serialized.is_valid():
