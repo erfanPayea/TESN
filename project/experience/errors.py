@@ -1,0 +1,8 @@
+DONE = "Everything is OK!"
+NECESSARY_FIELDS_REQUIRED = "Please provide necessary arguments!"
+ATTRACTION_NOT_FOUND = "There is no attraction with this id!"
+USER_NOT_FOUND = "User not found!"
+CITY_NOT_FOUND = "City not found!"
+POST_NOT_FOUND = "Post not found!"
+COMMENT_NOT_FOUND = "Comment not found!"
+REVIEW_NOT_FOUND = "Review not found!"
