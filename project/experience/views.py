@@ -6,6 +6,7 @@ from user import models as user_models
 
 from . import models as experience_models
 from . import serializers, errors
+from user import errors as user_errors
 
 
 class Posts(APIView):
@@ -208,3 +209,21 @@ class ViewAllComments(APIView):
         for index in range(0, len(post.comments.all())):
             data[f"{index}"] = serializers.comment_serializer(post.comments.all()[index])
         return Response(data, status.HTTP_200_OK)
+
+
+
+class CityFallowing(APIView):
+    permission_classes = (IsAuthenticated,)
+    def post(self, request):
+        try:
+            to_be_subscribed = user_models.City.objects.get(id=request.data["city_id"])
+        except user_models.User.DoesNotExist:
+            return Response(user_errors.NOT_FOUND.get("data"), user_errors.NOT_FOUND.get("status"))
+        except:
+            return Response(user_errors.INVALID_ARGUMENTS.get("data"), user_errors.INVALID_ARGUMENTS.get("status"))
+        if to_be_subscribed is None:
+            return Response(user_errors.NOT_FOUND.get("data"), user_errors.USER_NOT_FOUND.get("status"))
+        else:
+            new_following = experience_models.CityFollowings(follower=request.user, following=to_be_subscribed)
+            new_following.save()
+            return Response({}, status.HTTP_200_OK)

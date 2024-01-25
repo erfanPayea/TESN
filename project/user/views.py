@@ -5,6 +5,7 @@ from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+import re
 
 from . import errors
 from . import models
@@ -168,3 +169,20 @@ class OtpValidator(APIView):
 
         token, created = RestToken.objects.get_or_create(user=user)
         return Response({'token': token.key}, status=status.HTTP_200_OK)
+
+class Subscribe(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request):
+        try:
+            membership = request.data["membership"]
+        except:
+            return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
+
+        if re.fullmatch("[GBS]", membership):
+            request.user.membership = membership
+            request.user.save()
+        else:
+            return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
+
+

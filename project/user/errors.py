@@ -14,6 +14,13 @@ USER_NOT_FOUND = {
         "message": "user not found"
     }
 }
+NOT_FOUND = {
+    "status": status.HTTP_404_NOT_FOUND,
+    "data": {
+        "code": 1002,
+        "message": "required data not found"
+    }
+}
 OTP_NOT_VALID = {
     "status": status.HTTP_400_BAD_REQUEST,
     "data": {
