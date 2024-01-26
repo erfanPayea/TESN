@@ -14,9 +14,9 @@ class Posts(APIView):
 
     def post(self, request):
         try:
-            attraction_id = request.data["attraction_id"]
+            attraction_id = request.data["attractionId"]
             caption = request.data["caption"]
-            file_path = request.data["file_path"]
+            file_path = request.data["filePath"]
         except:
             return Response(errors.NECESSARY_FIELDS_REQUIRED, status.HTTP_400_BAD_REQUEST)
 
@@ -27,7 +27,7 @@ class Posts(APIView):
         new_post = experience_models.Post(owner=request.user, attraction=attraction, number_of_likes=0, caption=caption,
                                           file_path=file_path)
         new_post.save()
-        return Response(serializers.post_serializer(new_post), status.HTTP_200_OK)
+        return Response(serializers.post_serializer(new_post, False), status.HTTP_200_OK)
 
 
 class Reviews(APIView):
@@ -35,9 +35,9 @@ class Reviews(APIView):
 
     def post(self, request):
         try:
-            attraction_id = request.data["attraction_id"]
+            attraction_id = request.data["attractionId"]
             caption = request.data["caption"]
-            file_path = request.data["file_path"]
+            file_path = request.data["filePath"]
         except:
             return Response(errors.NECESSARY_FIELDS_REQUIRED, status.HTTP_400_BAD_REQUEST)
 
@@ -47,7 +47,7 @@ class Reviews(APIView):
         new_review = experience_models.Review(owner=request.user, attraction=attraction, number_of_likes=0,
                                               caption=caption, file_path=file_path)
         new_review.save()
-        return Response(serializers.review_serializer(new_review), status.HTTP_200_OK)
+        return Response(serializers.review_serializer(new_review, False), status.HTTP_200_OK)
 
 
 class Likes(APIView):
@@ -55,8 +55,8 @@ class Likes(APIView):
 
     def post(self, request):
         try:
-            destination_type = request.data["destination_type"]
-            destination_id = request.data["destination_id"]
+            destination_type = request.data["destinationType"]
+            destination_id = request.data["destinationId"]
         except:
             return Response(errors.NECESSARY_FIELDS_REQUIRED, status.HTTP_400_BAD_REQUEST)
 
@@ -121,7 +121,9 @@ class ViewAPost(APIView):
         post = experience_models.Post.objects.filter(id=post_id).first()
         if post is None:
             return Response(errors.POST_NOT_FOUND, status.HTTP_404_NOT_FOUND)
-        return Response(serializers.post_serializer(post), status.HTTP_200_OK)
+
+        like_post = experience_models.LikePost.objects.filter(destination_post=post, owner=request.user)
+        return Response(serializers.post_serializer(post, like_post is not None), status.HTTP_200_OK)
 
 
 class ViewFirstSixPosts(APIView):
@@ -136,7 +138,8 @@ class ViewFirstSixPosts(APIView):
 
         data = {}
         for index in range(0, posts_count):
-            data[f"{index}"] = serializers.post_serializer(posts[index])
+            like_post = experience_models.LikePost.objects.filter(destination_post=posts[index], owner=request.user)
+            data[f"{index}"] = serializers.post_serializer(posts[index], like_post is not None)
         return Response(data, status.HTTP_200_OK)
 
 
@@ -150,7 +153,9 @@ class ViewAllPosts(APIView):
 
         data = {}
         for index in range(0, len(user.posts.all())):
-            data[f"{index}"] = serializers.post_serializer(user.posts.all()[index])
+            like_post = experience_models.LikePost.objects.filter(destination_post=user.posts.all()[index],
+                                                                  owner=request.user)
+            data[f"{index}"] = serializers.post_serializer(user.posts.all()[index], like_post is not None)
         return Response(data, status.HTTP_200_OK)
 
 
@@ -163,7 +168,8 @@ class ViewFirstReview(APIView):
         if review is None:
             return Response({}, status.HTTP_200_OK)
 
-        return Response(serializers.review_serializer(review), status.HTTP_200_OK)
+        like_review = experience_models.LikeReview.objects.filter(destination_review=review, owner=request.user)
+        return Response(serializers.review_serializer(review, like_review is not None), status.HTTP_200_OK)
 
 
 class ViewAllReviews(APIView):
@@ -176,7 +182,9 @@ class ViewAllReviews(APIView):
 
         data = {}
         for index in range(0, len(attraction.reviews.all())):
-            data[f"{index}"] = serializers.review_serializer(attraction.reviews.all()[index])
+            like_review = experience_models.LikeReview.objects.filter(
+                destination_review=attraction.reviews.all()[index], owner=request.user)
+            data[f"{index}"] = serializers.review_serializer(attraction.reviews.all()[index], like_review is not None)
         return Response(data, status.HTTP_200_OK)
 
 
@@ -194,7 +202,12 @@ class ViewBestComment(APIView):
 
         if best_comment_index == -1:
             return Response({}, status.HTTP_200_OK)
-        return Response(serializers.comment_serializer(post.comments.all()[best_comment_index]), status.HTTP_200_OK)
+
+        like_comment = experience_models.LikeComment.objects.filter(
+            destination_comment=post.comments.all()[best_comment_index], owner=request.user)
+        return Response(
+            serializers.comment_serializer(post.comments.all()[best_comment_index], like_comment is not None),
+            status.HTTP_200_OK)
 
 
 class ViewAllComments(APIView):
@@ -207,16 +220,18 @@ class ViewAllComments(APIView):
 
         data = {}
         for index in range(0, len(post.comments.all())):
-            data[f"{index}"] = serializers.comment_serializer(post.comments.all()[index])
+            like_comment = experience_models.LikeComment.objects.filter(destination_comment=post.comments.all()[index],
+                                                                        owner=request.user)
+            data[f"{index}"] = serializers.comment_serializer(post.comments.all()[index], like_comment is not None)
         return Response(data, status.HTTP_200_OK)
-
 
 
 class CityFallowing(APIView):
     permission_classes = (IsAuthenticated,)
+
     def post(self, request):
         try:
-            to_be_subscribed = user_models.City.objects.get(id=request.data["city_id"])
+            to_be_subscribed = user_models.City.objects.get(id=request.data["cityId"])
         except user_models.User.DoesNotExist:
             return Response(user_errors.NOT_FOUND.get("data"), user_errors.NOT_FOUND.get("status"))
         except:
