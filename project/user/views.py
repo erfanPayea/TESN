@@ -60,7 +60,7 @@ class Following(APIView):
 
     def post(self, request):
         try:
-            to_be_followed = models.User.objects.get(id=request.data["user_id"])
+            to_be_followed = models.User.objects.get(id=request.data["userId"])
         except models.User.DoesNotExist:
             return Response(errors.USER_NOT_FOUND.get("data"), errors.USER_NOT_FOUND.get("status"))
         except:
@@ -79,7 +79,7 @@ class Following(APIView):
         return Response(serialized.data, status.HTTP_200_OK)
 
     def delete(self, request):
-        to_be_unfollowed = models.User.objects.filter(id=request.data("user_id"))
+        to_be_unfollowed = models.User.objects.filter(id=request.data("userId"))
 
         if to_be_unfollowed is None:
             return Response(errors.USER_NOT_FOUND.get("data"), errors.USER_NOT_FOUND.get("status"))
