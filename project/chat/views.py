@@ -28,50 +28,42 @@ class Message(APIView):
         if chat is None:
             return Response({}, status.HTTP_400_BAD_REQUEST)
 
-        new_message = models.Message(chat=chat, sender=request.user, content=request.content)
-
+        new_message = models.Message(chat=chat, sender=request.user, content=content)
+        new_message.save()
         serialized = self.Serializer(new_message)
-        if serialized.is_valid():
-            new_message.save()
-            serialized.save()
-            return Response(serialized.data, status.HTTP_200_OK)
-        else:
-            return Response({serialized.errors}, status.HTTP_400_BAD_REQUEST)
+        return Response(serialized.data, status.HTTP_200_OK)
+
 
 
 class Chat(APIView):
     Serializer = serializers.ChatSerializer
-    Model = models.Message
+    Model = models.Chat
     permission_classes = (IsAuthenticated,)
 
-    def post(self, request):
+    def post(self, request, chat_id=0):
         try:
             userId = request.data["userId"]
         except:
             return Response({errors.NECESSARY_FIELDS_REQUIRED}, status.HTTP_400_BAD_REQUEST)
-        user = user_models.User.objects.get(id=userId)
-        if user is None:
-            return Response({errors.USER_NOT_FOUND}, status.HTTP_404_NOT_FOUND)
-        existing_chat = models.Chat.objects.filter(Q(first_user=user) | Q(second_user=user)).all()
-        if existing_chat is not None:
+        if userId == request.user.id:
+            return Response({"you can not chat with yourself!"}, status.HTTP_400_BAD_REQUEST)
+        try: user = user_models.User.objects.get(id=userId)
+        except models.Chat.DoesNotExist: return Response({errors.USER_NOT_FOUND}, status.HTTP_404_NOT_FOUND)
+
+        existing_chat = models.Chat.objects.filter(Q(first_user=user, second_user=request.user)| Q(second_user=user, first_user=request.user)).all()
+        if len(existing_chat):
             return Response({errors.ALREADY_EXISTS}, status.HTTP_400_BAD_REQUEST)
         new_chat = models.Chat(first_user=request.user, second_user=user)
         new_chat.save()
         serialized = self.Serializer(new_chat)
-        if serialized.is_valid():
-            serialized.save()
-            return Response({serialized.data}, status.HTTP_200_OK)
-        else:
-            return Response(serialized.errors, status.HTTP_400_BAD_REQUEST)
+        return Response(serialized.data, status.HTTP_200_OK)
 
-    def get(self, request, chat_id):
-        chat = models.Chat.objects.get(id=chat_id)
-        if chat is None:
-            return Response({errors.CHAT_NOT_FOUND}, status.HTTP_404_NOT_FOUND)
+
+    def get(self, request, chat_id=0):
+        print(chat_id)
+        try:chat = models.Chat.objects.get(id=chat_id)
+        except models.Chat.DoesNotExist: return Response({errors.CHAT_NOT_FOUND}, status.HTTP_404_NOT_FOUND)
 
         serialized = self.Serializer(chat)
-        if serialized.is_valid():
-            serialized.save()
-            return Response(serialized.data, status.HTTP_200_OK)
-        else:
-            return Response({serialized.errors}, status.HTTP_400_BAD_REQUEST)
+        return Response(serialized.data, status.HTTP_200_OK)
+
