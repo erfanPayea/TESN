@@ -19,19 +19,27 @@ class Message(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, chat_id):
-
-        try:
-            content = request.data["content"]
-        except:
-            return Response({}, status.HTTP_400_BAD_REQUEST)
-        chat = models.Chat.objects.filter(id=chat_id).first()
-        if chat is None:
-            return Response({}, status.HTTP_400_BAD_REQUEST)
+        try: content = request.data["content"]
+        except: return Response({errors.NECESSARY_FIELDS_REQUIRED}, status.HTTP_400_BAD_REQUEST)
+        try: chat = models.Chat.objects.get(id=chat_id)
+        except models.Chat.DoesNotExist: return Response({errors.CHAT_NOT_FOUND}, status.HTTP_404_NOT_FOUND)
 
         new_message = models.Message(chat=chat, sender=request.user, content=content)
         new_message.save()
         serialized = self.Serializer(new_message)
         return Response(serialized.data, status.HTTP_200_OK)
+
+    def delete(self, request, chat_id):
+        try: messageId = request.data["messageId"]
+        except: return Response({errors.NECESSARY_FIELDS_REQUIRED}, status.HTTP_400_BAD_REQUEST)
+        try:
+            chat = models.Chat.objects.get(id=chat_id)
+            message = models.Message.objects.get(id= messageId)
+        except models.Chat.DoesNotExist: return Response({errors.CHAT_NOT_FOUND}, status.HTTP_404_NOT_FOUND)
+        except models.Message.DoesNotExist: return Response({errors.MESSAGE_NOT_FOUND}, status.HTTP_404_NOT_FOUND)
+        message.delete()
+        return Response({errors.DONE}, status.HTTP_200_OK)
+
 
 
 
@@ -48,7 +56,7 @@ class Chat(APIView):
         if userId == request.user.id:
             return Response({"you can not chat with yourself!"}, status.HTTP_400_BAD_REQUEST)
         try: user = user_models.User.objects.get(id=userId)
-        except models.Chat.DoesNotExist: return Response({errors.USER_NOT_FOUND}, status.HTTP_404_NOT_FOUND)
+        except user_models.User.DoesNotExist: return Response({errors.USER_NOT_FOUND}, status.HTTP_404_NOT_FOUND)
 
         existing_chat = models.Chat.objects.filter(Q(first_user=user, second_user=request.user)| Q(second_user=user, first_user=request.user)).all()
         if len(existing_chat):
