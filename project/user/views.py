@@ -94,7 +94,7 @@ class Followers(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        all_fallowing = models.Followers.objects.filter(fallowing=request.user).all()
+        all_fallowing = models.Followers.objects.filter(following=request.user).all()
         serialized = self.Serializer(all_fallowing, many=True)
         return Response(serialized.data, status.HTTP_200_OK)
 
@@ -111,7 +111,7 @@ class Otp(APIView):
         except:
             username = "user" + str(models.User.objects.latest('id').id + 1)
 
-        duplicate_email = models.User.objects.filter(email=email).first()
+        # duplicate_email = models.User.objects.filter(email=email).first()
         if models.User.objects.filter(username=username).first() is not None:
             return Response(errors.DUPLICATE_USERNAME.get("data"), errors.DUPLICATE_USERNAME.get("status"))
         if models.User.objects.filter(email=email).first() is not None:
@@ -170,6 +170,7 @@ class OtpValidator(APIView):
         token, created = RestToken.objects.get_or_create(user=user)
         return Response({'token': token.key}, status=status.HTTP_200_OK)
 
+
 class Subscribe(APIView):
     permission_classes = (IsAuthenticated, )
 
@@ -179,10 +180,9 @@ class Subscribe(APIView):
         except:
             return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
 
+        # bank transaction validation needed
         if re.fullmatch("[GBS]", membership):
             request.user.membership = membership
             request.user.save()
         else:
             return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
-
-
