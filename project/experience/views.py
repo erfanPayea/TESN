@@ -22,7 +22,7 @@ class Posts(APIView):
 
         attraction = experience_models.Attraction.objects.filter(id=attraction_id).first()
         if attraction is None and attraction_id != "-1":
-            return Response(errors.ATTRACTION_NOT_FOUND, status.HTTP_400_BAD_REQUEST)
+            return Response(errors.ATTRACTION_NOT_FOUND.get("data"), errors.ATTRACTION_NOT_FOUND.get("status"))
 
         new_post = experience_models.Post(owner=request.user, attraction=attraction, number_of_likes=0, caption=caption,
                                           file_path=file_path)
@@ -43,7 +43,7 @@ class Reviews(APIView):
 
         attraction = experience_models.Attraction.objects.filter(id=attraction_id)
         if attraction is None:
-            return Response(errors.ATTRACTION_NOT_FOUND, status.HTTP_404_NOT_FOUND)
+            return Response(errors.ATTRACTION_NOT_FOUND.get("data"), errors.ATTRACTION_NOT_FOUND.get("status"))
         new_review = experience_models.Review(owner=request.user, attraction=attraction, number_of_likes=0,
                                               caption=caption, file_path=file_path)
         new_review.save()
@@ -243,7 +243,7 @@ class CityFallowing(APIView):
         except:
             return Response(user_errors.INVALID_ARGUMENTS.get("data"), user_errors.INVALID_ARGUMENTS.get("status"))
         if to_be_subscribed is None:
-            return Response(user_errors.NOT_FOUND.get("data"), user_errors.USER_NOT_FOUND.get("status"))
+            return Response(user_errors.USER_NOT_FOUND.get("data"), user_errors.USER_NOT_FOUND.get("status"))
         else:
             new_following = experience_models.CityFollowings(follower=request.user, following=to_be_subscribed)
             new_following.save()
