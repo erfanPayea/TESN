@@ -111,6 +111,7 @@ class Otp(APIView):
         except:
             username = "user" + str(models.User.objects.latest('id').id + 1)
 
+        # todo : duplicate_email ?
         # duplicate_email = models.User.objects.filter(email=email).first()
         if models.User.objects.filter(username=username).first() is not None:
             return Response(errors.DUPLICATE_USERNAME.get("data"), errors.DUPLICATE_USERNAME.get("status"))
@@ -180,6 +181,7 @@ class Subscribe(APIView):
         except:
             return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
 
+        # todo : ino khodet neveshti ! :
         # bank transaction validation needed
         if re.fullmatch("[GBS]", membership):
             request.user.membership = membership

@@ -1,3 +1,6 @@
+import datetime
+import sys
+
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -24,6 +27,16 @@ class Posts(APIView):
         if attraction is None and attraction_id != "-1":
             return Response(errors.ATTRACTION_NOT_FOUND.get("data"), errors.ATTRACTION_NOT_FOUND.get("status"))
 
+        max_post_per_day = sys.maxsize
+        if request.user.membership == 'B':
+            max_post_per_day = 5
+        elif request.user.membership == 'S':
+            max_post_per_day = 10
+        today_posts = len(
+            experience_models.Post.objects.filter(owner=request.user, sent_time__day=datetime.date.today().day))
+        if today_posts >= max_post_per_day:
+            return Response(errors.LIMIT_REACHED.get("data"), errors.LIMIT_REACHED.get("status"))
+
         new_post = experience_models.Post(owner=request.user, attraction=attraction, number_of_likes=0, caption=caption,
                                           file_path=file_path)
         new_post.save()
@@ -44,6 +57,17 @@ class Reviews(APIView):
         attraction = experience_models.Attraction.objects.filter(id=attraction_id)
         if attraction is None:
             return Response(errors.ATTRACTION_NOT_FOUND.get("data"), errors.ATTRACTION_NOT_FOUND.get("status"))
+
+        max_review_per_day = 5
+        if request.user.membership == 'B':
+            max_review_per_day = 2
+        elif request.user.membership == 'S':
+            max_review_per_day = 0
+        today_reviews = len(
+            experience_models.Review.objects.filter(owner=request.user, sent_time__day=datetime.date.today().day))
+        if today_reviews >= max_review_per_day:
+            return Response(errors.LIMIT_REACHED.get("data"), errors.LIMIT_REACHED.get("status"))
+
         new_review = experience_models.Review(owner=request.user, attraction=attraction, number_of_likes=0,
                                               caption=caption, file_path=file_path)
         new_review.save()

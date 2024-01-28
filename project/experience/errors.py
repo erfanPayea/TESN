@@ -8,6 +8,14 @@ INVALID_ARGUMENTS = {
     }
 }
 
+LIMIT_REACHED = {
+    "status": status.HTTP_406_NOT_ACCEPTABLE,
+    "data": {
+        "code": 4000,
+        "message": "Your upload limit is over for today!"
+    }
+}
+
 CITY_NOT_FOUND = {
     "status": status.HTTP_404_NOT_FOUND,
     "data": {

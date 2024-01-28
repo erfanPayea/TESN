@@ -21,17 +21,24 @@ ALREADY_EXISTS = {
         "message": "requested model already exists"
     }
 }
+CHAT_WITH_SELF = {
+    "status": status.HTTP_405_METHOD_NOT_ALLOWED,
+    "data": {
+        "code": 3001,
+        "message": "you can not chat with yourself!"
+    }
+}
 CHAT_NOT_FOUND = {
     "status": status.HTTP_404_NOT_FOUND,
     "data": {
-        "code": 3001,
+        "code": 3002,
         "message": "chat not found!"
     }
 }
 MESSAGE_NOT_FOUND = {
     "status": status.HTTP_404_NOT_FOUND,
     "data": {
-        "code": 3002,
+        "code": 3003,
         "message": "message not found!"
     }
 }

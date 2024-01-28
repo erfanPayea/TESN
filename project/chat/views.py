@@ -52,12 +52,13 @@ class Chat(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, chat_id=0):
+        # todo : chat_id ?
         try:
             userId = request.data["userId"]
         except:
             return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
         if userId == request.user.id:
-            return Response({"you can not chat with yourself!"}, status.HTTP_400_BAD_REQUEST)
+            return Response(errors.CHAT_WITH_SELF.get("data"), errors.CHAT_WITH_SELF.get("status"))
         try:
             user = user_models.User.objects.get(id=userId)
         except user_models.User.DoesNotExist:
