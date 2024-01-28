@@ -111,8 +111,6 @@ class Otp(APIView):
         except:
             username = "user" + str(models.User.objects.latest('id').id + 1)
 
-        # todo : duplicate_email ?
-        # duplicate_email = models.User.objects.filter(email=email).first()
         if models.User.objects.filter(username=username).first() is not None:
             return Response(errors.DUPLICATE_USERNAME.get("data"), errors.DUPLICATE_USERNAME.get("status"))
         if models.User.objects.filter(email=email).first() is not None:
@@ -158,12 +156,12 @@ class OtpValidator(APIView):
             user = models.User.objects.get(email=email)
         except models.User.DoesNotExist:
             return Response(errors.USER_NOT_FOUND.get("data"), errors.USER_NOT_FOUND.get("status"))
+        if (timezone.now() - user.otp.created_at).total_seconds() > 3600:
+            return Response(errors.OTP_EXPIRED.get("data"), errors.OTP_EXPIRED.get("status"))
         if user.otp.passkey is None:
             return Response(errors.OTP_NOT_VALID.get("data"), errors.OTP_NOT_VALID.get("status"))
         if user.otp.passkey != otp_key:
             return Response(errors.OTP_NOT_VALID.get("data"), errors.OTP_NOT_VALID.get("status"))
-        if (timezone.now() - user.otp.created_at).total_seconds() > 3600:
-            return Response(errors.OTP_EXPIRED.get("data"), errors.OTP_EXPIRED.get("status"))
 
         user.otp.passkey = None
         user.otp.save()
@@ -173,7 +171,7 @@ class OtpValidator(APIView):
 
 
 class Subscribe(APIView):
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request):
         try:

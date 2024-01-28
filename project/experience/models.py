@@ -61,6 +61,7 @@ class LikeReview(Like):
 class LikeComment(Like):
     destination_comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name="likes")
 
+
 class CityFollowings(models.Model):
     follower = models.ForeignKey(user_models.User, on_delete=models.CASCADE)
     following = models.ForeignKey(City, on_delete=models.CASCADE)

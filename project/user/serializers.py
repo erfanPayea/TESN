@@ -2,11 +2,11 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework.serializers import ValidationError
 from . import models
 
+
 class Follower(ModelSerializer):
     class Meta:
         model = models.Followers
         fields = '__all__'
-
 
 # class TestApi(ModelSerializer):
 #
