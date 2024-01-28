@@ -131,15 +131,17 @@ class ViewFirstSixPosts(APIView):
         user = user_models.User.objects.filter(id=user_id).first()
         if user is None:
             return Response(errors.USER_NOT_FOUND, status.HTTP_400_BAD_REQUEST)
-        posts_count = min(6, len(user.posts.all()))
-        posts = []
+        all_posts = user.posts.all()
+        posts_count = min(6, len(all_posts))
+        first_posts = []
         for index in range(0, posts_count):
-            posts.append(user.posts.all()[index])
+            first_posts.append(all_posts[index])
 
         data = {}
         for index in range(0, posts_count):
-            like_post = experience_models.LikePost.objects.filter(destination_post=posts[index], owner=request.user)
-            data[f"{index}"] = serializers.post_serializer(posts[index], like_post is not None)
+            like_post = experience_models.LikePost.objects.filter(destination_post=first_posts[index],
+                                                                  owner=request.user)
+            data[f"{index}"] = serializers.post_serializer(first_posts[index], like_post is not None)
         return Response(data, status.HTTP_200_OK)
 
 
@@ -151,11 +153,12 @@ class ViewAllPosts(APIView):
         if user is None:
             return Response(errors.USER_NOT_FOUND, status.HTTP_400_BAD_REQUEST)
 
+        all_posts = user.posts.all()
         data = {}
-        for index in range(0, len(user.posts.all())):
-            like_post = experience_models.LikePost.objects.filter(destination_post=user.posts.all()[index],
+        for index in range(0, len(all_posts)):
+            like_post = experience_models.LikePost.objects.filter(destination_post=all_posts[index],
                                                                   owner=request.user)
-            data[f"{index}"] = serializers.post_serializer(user.posts.all()[index], like_post is not None)
+            data[f"{index}"] = serializers.post_serializer(all_posts[index], like_post is not None)
         return Response(data, status.HTTP_200_OK)
 
 
@@ -180,11 +183,12 @@ class ViewAllReviews(APIView):
         if attraction is None:
             return Response(errors.ATTRACTION_NOT_FOUND, status.HTTP_400_BAD_REQUEST)
 
+        all_reviews = attraction.reviews.all()
         data = {}
-        for index in range(0, len(attraction.reviews.all())):
+        for index in range(0, len(all_reviews)):
             like_review = experience_models.LikeReview.objects.filter(
-                destination_review=attraction.reviews.all()[index], owner=request.user)
-            data[f"{index}"] = serializers.review_serializer(attraction.reviews.all()[index], like_review is not None)
+                destination_review=all_reviews[index], owner=request.user)
+            data[f"{index}"] = serializers.review_serializer(all_reviews[index], like_review is not None)
         return Response(data, status.HTTP_200_OK)
 
 
@@ -194,19 +198,20 @@ class ViewBestComment(APIView):
         if post is None:
             return Response(errors.POST_NOT_FOUND, status.HTTP_404_NOT_FOUND)
 
+        all_comments = post.comments.all()
         maximum = -1
         best_comment_index = -1
-        for index in range(0, len(post.comments.all())):
-            if post.comments.all()[index].number_of_likes > maximum:
+        for index in range(0, len(all_comments)):
+            if all_comments[index].number_of_likes > maximum:
                 best_comment_index = index
 
         if best_comment_index == -1:
             return Response({}, status.HTTP_200_OK)
 
         like_comment = experience_models.LikeComment.objects.filter(
-            destination_comment=post.comments.all()[best_comment_index], owner=request.user)
+            destination_comment=all_comments[best_comment_index], owner=request.user)
         return Response(
-            serializers.comment_serializer(post.comments.all()[best_comment_index], like_comment is not None),
+            serializers.comment_serializer(all_comments[best_comment_index], like_comment is not None),
             status.HTTP_200_OK)
 
 
@@ -218,11 +223,12 @@ class ViewAllComments(APIView):
         if post is None:
             return Response(errors.POST_NOT_FOUND, status.HTTP_404_NOT_FOUND)
 
+        all_comments = post.comments.all()
         data = {}
-        for index in range(0, len(post.comments.all())):
-            like_comment = experience_models.LikeComment.objects.filter(destination_comment=post.comments.all()[index],
+        for index in range(0, len(all_comments)):
+            like_comment = experience_models.LikeComment.objects.filter(destination_comment=all_comments[index],
                                                                         owner=request.user)
-            data[f"{index}"] = serializers.comment_serializer(post.comments.all()[index], like_comment is not None)
+            data[f"{index}"] = serializers.comment_serializer(all_comments[index], like_comment is not None)
         return Response(data, status.HTTP_200_OK)
 
 
