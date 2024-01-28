@@ -18,7 +18,7 @@ class Posts(APIView):
             caption = request.data["caption"]
             file_path = request.data["filePath"]
         except:
-            return Response(errors.NECESSARY_FIELDS_REQUIRED, status.HTTP_400_BAD_REQUEST)
+            return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
 
         attraction = experience_models.Attraction.objects.filter(id=attraction_id).first()
         if attraction is None and attraction_id != "-1":
@@ -39,7 +39,7 @@ class Reviews(APIView):
             caption = request.data["caption"]
             file_path = request.data["filePath"]
         except:
-            return Response(errors.NECESSARY_FIELDS_REQUIRED, status.HTTP_400_BAD_REQUEST)
+            return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
 
         attraction = experience_models.Attraction.objects.filter(id=attraction_id)
         if attraction is None:
@@ -58,12 +58,12 @@ class Likes(APIView):
             destination_type = request.data["destinationType"]
             destination_id = request.data["destinationId"]
         except:
-            return Response(errors.NECESSARY_FIELDS_REQUIRED, status.HTTP_400_BAD_REQUEST)
+            return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
 
         if destination_type == "POST":
             destination_post = experience_models.Post.objects.filter(id=destination_id).first()
             if destination_post is None:
-                return Response(errors.POST_NOT_FOUND, status.HTTP_400_BAD_REQUEST)
+                return Response(errors.POST_NOT_FOUND.get("data"), errors.POST_NOT_FOUND.get("status"))
             like_post = experience_models.LikePost.objects.filter(destination_post=destination_post,
                                                                   owner=request.user).first()
             if like_post is None:
@@ -80,7 +80,7 @@ class Likes(APIView):
         elif destination_type == "REVIEW":
             destination_review = experience_models.Review.objects.filter(id=destination_id).first()
             if destination_review is None:
-                return Response(errors.REVIEW_NOT_FOUND, status.HTTP_404_NOT_FOUND)
+                return Response(errors.REVIEW_NOT_FOUND.get("data"), errors.REVIEW_NOT_FOUND.get("status"))
             like_review = experience_models.LikeReview.objects.filter(destination_review=destination_review,
                                                                       owner=request.user).first()
             if like_review is None:
@@ -98,7 +98,7 @@ class Likes(APIView):
         elif destination_type == "COMMENT":
             destination_comment = experience_models.Comment.objects.filter(id=destination_id).first()
             if destination_comment is None:
-                return Response(errors.COMMENT_NOT_FOUND, status.HTTP_404_NOT_FOUND)
+                return Response(errors.COMMENT_NOT_FOUND.get("data"), errors.COMMENT_NOT_FOUND.get("status"))
 
             like_comment = experience_models.LikeComment.objects.filter(destination_comment=destination_comment,
                                                                         owner=request.user)
@@ -120,7 +120,7 @@ class ViewAPost(APIView):
     def get(self, request, post_id):
         post = experience_models.Post.objects.filter(id=post_id).first()
         if post is None:
-            return Response(errors.POST_NOT_FOUND, status.HTTP_404_NOT_FOUND)
+            return Response(errors.POST_NOT_FOUND.get("data"), errors.POST_NOT_FOUND.get("status"))
 
         like_post = experience_models.LikePost.objects.filter(destination_post=post, owner=request.user)
         return Response(serializers.post_serializer(post, like_post is not None), status.HTTP_200_OK)
@@ -130,7 +130,7 @@ class ViewFirstSixPosts(APIView):
     def get(self, request, user_id):
         user = user_models.User.objects.filter(id=user_id).first()
         if user is None:
-            return Response(errors.USER_NOT_FOUND, status.HTTP_400_BAD_REQUEST)
+            return Response(user_errors.USER_NOT_FOUND.get("data"), user_errors.USER_NOT_FOUND.get("status"))
         all_posts = user.posts.all()
         posts_count = min(6, len(all_posts))
         first_posts = []
@@ -151,7 +151,7 @@ class ViewAllPosts(APIView):
     def get(self, request, user_id):
         user = user_models.User.objects.filter(id=user_id).first()
         if user is None:
-            return Response(errors.USER_NOT_FOUND, status.HTTP_400_BAD_REQUEST)
+            return Response(user_errors.USER_NOT_FOUND.get("data"), user_errors.USER_NOT_FOUND.get("status"))
 
         all_posts = user.posts.all()
         data = {}
@@ -166,7 +166,7 @@ class ViewFirstReview(APIView):
     def get(self, request, attraction_id):
         attraction = experience_models.Attraction.objects.filter(id=attraction_id)
         if attraction is None:
-            return Response(errors.ATTRACTION_NOT_FOUND, status.HTTP_400_BAD_REQUEST)
+            return Response(errors.ATTRACTION_NOT_FOUND.get("data"), errors.ATTRACTION_NOT_FOUND.get("status"))
         review = experience_models.Review.objects.filter(attraction=attraction).first()
         if review is None:
             return Response({}, status.HTTP_200_OK)
@@ -181,7 +181,7 @@ class ViewAllReviews(APIView):
     def get(self, request, attraction_id):
         attraction = experience_models.Attraction.objects.filter(id=attraction_id).first()
         if attraction is None:
-            return Response(errors.ATTRACTION_NOT_FOUND, status.HTTP_400_BAD_REQUEST)
+            return Response(errors.ATTRACTION_NOT_FOUND.get("data"), errors.ATTRACTION_NOT_FOUND.get("status"))
 
         all_reviews = attraction.reviews.all()
         data = {}
@@ -196,7 +196,7 @@ class ViewBestComment(APIView):
     def get(self, request, post_id):
         post = experience_models.Post.objects.filter(id=post_id).first()
         if post is None:
-            return Response(errors.POST_NOT_FOUND, status.HTTP_404_NOT_FOUND)
+            return Response(errors.POST_NOT_FOUND.get("data"), errors.POST_NOT_FOUND.get("status"))
 
         all_comments = post.comments.all()
         maximum = -1
@@ -221,7 +221,7 @@ class ViewAllComments(APIView):
     def get(self, request, post_id):
         post = experience_models.Post.objects.filter(id=post_id).first()
         if post is None:
-            return Response(errors.POST_NOT_FOUND, status.HTTP_404_NOT_FOUND)
+            return Response(errors.POST_NOT_FOUND.get("data"), errors.POST_NOT_FOUND.get("status"))
 
         all_comments = post.comments.all()
         data = {}
