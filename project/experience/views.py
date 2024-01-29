@@ -48,6 +48,7 @@ class Reviews(APIView):
 
     def post(self, request):
         try:
+            rating = int(request["rating"])
             attraction_id = request.data["attractionId"]
             caption = request.data["caption"]
             file_path = request.data["filePath"]
@@ -69,7 +70,7 @@ class Reviews(APIView):
             return Response(errors.LIMIT_REACHED.get("data"), errors.LIMIT_REACHED.get("status"))
 
         new_review = experience_models.Review(owner=request.user, attraction=attraction, number_of_likes=0,
-                                              caption=caption, file_path=file_path)
+                                              caption=caption, file_path=file_path, rating=rating)
         new_review.save()
         return Response(serializers.review_serializer(new_review, False), status.HTTP_200_OK)
 

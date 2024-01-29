@@ -33,6 +33,7 @@ class Post(Experience):
 
 class Review(Experience):
     owner = models.ForeignKey(user_models.User, null=True, on_delete=models.SET_NULL)
+    rating = models.PositiveIntegerField()
     attraction = models.ForeignKey(Attraction, null=False, on_delete=models.CASCADE, related_name="reviews")
 
 

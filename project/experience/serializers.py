@@ -22,6 +22,7 @@ def review_serializer(review, do_you_like_it):
         'sentTime': review.sent_time,
         'owner': review.owner.id,
         'attraction': review.attraction.id,
+        'rating': review.rating,
         'numberOfLikes': review.number_of_likes,
         'caption': review.caption,
         'filePath': review.file_path,
