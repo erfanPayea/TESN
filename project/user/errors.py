@@ -21,6 +21,20 @@ NOT_FOUND = {
         "message": "required data not found"
     }
 }
+WRONG_PASSWORD = {
+    "status": status.HTTP_400_BAD_REQUEST,
+    "data": {
+        "code": 1003,
+        "message": "username and password did not match"
+    }
+}
+INVALID_PASSWORD = {
+    "status": status.HTTP_400_BAD_REQUEST,
+    "data": {
+        "code": 1004,
+        "message": "your password is too short"
+    }
+}
 OTP_NOT_VALID = {
     "status": status.HTTP_400_BAD_REQUEST,
     "data": {

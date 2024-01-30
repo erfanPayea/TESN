@@ -15,6 +15,7 @@ from .otp import generate_otp, send_otp_email
 
 class Users(APIView):
     permission_classes = (IsAuthenticated,)
+    Serializer = serializers.UserSerializer
 
     def post(self, request):
         try:
@@ -26,11 +27,30 @@ class Users(APIView):
 
         if models.User.objects.filter(username=username).first() is not None:
             return Response(errors.DUPLICATE_USERNAME.get("data"), errors.DUPLICATE_USERNAME.get("status"))
+        if len(password) < 8:
+            return Response(errors.INVALID_PASSWORD.get("data"), errors.INVALID_PASSWORD.get("status"))
+
+        request.user.set_password(password)
         request.user.username = username
-        request.user.password = password
         request.user.phone = phone
         request.user.save()
 
+        return Response({}, status.HTTP_200_OK)
+
+    def get(self, request):
+        serialized = self.Serializer(request.user)
+        return Response(serialized.data, status.HTTP_200_OK)
+
+    def patch(self, request):
+        try:
+            password = request.data["password"]
+        except:
+            return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
+        if len(password) < 8:
+            return Response(errors.INVALID_PASSWORD.get("data"), errors.INVALID_PASSWORD.get("status"))
+        print(request.user.username)
+        request.user.set_password(password)
+        request.user.save()
         return Response({}, status.HTTP_200_OK)
 
 
@@ -50,7 +70,7 @@ class Token(APIView):
             token, created = RestToken.objects.get_or_create(user=user)
             return Response({"token": token.key}, status.HTTP_200_OK)
         else:
-            return Response({}, status.HTTP_401_UNAUTHORIZED)
+            return Response(errors.WRONG_PASSWORD.get("data"), errors.WRONG_PASSWORD.get("status"))
 
 
 class Following(APIView):

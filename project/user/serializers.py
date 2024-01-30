@@ -8,6 +8,19 @@ class Follower(ModelSerializer):
         model = models.Followers
         fields = '__all__'
 
+
+class UserSerializer(ModelSerializer):
+    class Meta:
+        model = models.User
+        fields = (
+            "email",
+            "username",
+            "id",
+            "phone",
+            "date_joined",
+            "membership",
+        )
+
 # class TestApi(ModelSerializer):
 #
 #     class Meta:
