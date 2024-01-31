@@ -169,8 +169,9 @@ class ViewFirstSixPosts(APIView):
         for index in range(0, posts_count):
             like_post = experience_models.LikePost.objects.filter(destination_post=first_posts[index],
                                                                   owner=request.user)
-            data["posts"][index] = serializers.post_serializer(first_posts[index], like_post is not None)
+            data["posts"].append(serializers.post_serializer(first_posts[index], like_post is not None))
 
+        print(data)
         return Response(data, status.HTTP_200_OK)
 
 
@@ -189,7 +190,7 @@ class ViewAllPosts(APIView):
         for index in range(0, len(all_posts)):
             like_post = experience_models.LikePost.objects.filter(destination_post=all_posts[index],
                                                                   owner=request.user)
-            data["posts"][index] = serializers.post_serializer(all_posts[index], like_post is not None)
+            data["posts"].append(serializers.post_serializer(all_posts[index], like_post is not None))
         return Response(data, status.HTTP_200_OK)
 
 
@@ -214,7 +215,7 @@ class ViewExplorePosts(APIView):
         for index in range(0, len(first_posts)):
             like_post = experience_models.LikePost.objects.filter(destination_post=first_posts[index],
                                                                   owner=request.user)
-            data["posts"][index] = serializers.post_serializer(first_posts[index - pre_index], like_post is not None)
+            data["posts"].append(serializers.post_serializer(first_posts[index - pre_index], like_post is not None))
 
 
 class ViewFirstReview(APIView):
@@ -245,7 +246,7 @@ class ViewAllReviews(APIView):
         for index in range(0, len(all_reviews)):
             like_review = experience_models.LikeReview.objects.filter(
                 destination_review=all_reviews[index], owner=request.user)
-            data["reviews"][index] = serializers.review_serializer(all_reviews[index], like_review is not None)
+            data["reviews"].append(serializers.review_serializer(all_reviews[index], like_review is not None))
         return Response(data, status.HTTP_200_OK)
 
 
@@ -287,7 +288,7 @@ class ViewAllComments(APIView):
         for index in range(0, len(all_comments)):
             like_comment = experience_models.LikeComment.objects.filter(destination_comment=all_comments[index],
                                                                         owner=request.user)
-            data["comments"][index] = serializers.comment_serializer(all_comments[index], like_comment is not None)
+            data["comments"].append(serializers.comment_serializer(all_comments[index], like_comment is not None))
         return Response(data, status.HTTP_200_OK)
 
 
