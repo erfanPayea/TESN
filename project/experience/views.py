@@ -263,12 +263,12 @@ class CityFallowing(APIView):
     def post(self, request):
         try:
             to_be_subscribed = user_models.City.objects.get(id=request.data["cityId"])
-        except user_models.User.DoesNotExist:
+        except user_models.City.DoesNotExist:
             return Response(user_errors.NOT_FOUND.get("data"), user_errors.NOT_FOUND.get("status"))
         except:
             return Response(user_errors.INVALID_ARGUMENTS.get("data"), user_errors.INVALID_ARGUMENTS.get("status"))
         if to_be_subscribed is None:
-            return Response(user_errors.USER_NOT_FOUND.get("data"), user_errors.USER_NOT_FOUND.get("status"))
+            return Response(errors.CITY_NOT_FOUND.get("data"), errors.CITY_NOT_FOUND.get("status"))
         else:
             new_following = experience_models.CityFollowings(follower=request.user, following=to_be_subscribed)
             new_following.save()
