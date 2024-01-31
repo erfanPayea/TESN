@@ -30,3 +30,29 @@ class ChatSerializer(ModelSerializer):
     class Meta:
         model = models.Chat
         fields = '__all__'
+
+
+class MultipleChatSerializer(ModelSerializer):
+    class Meta:
+        model = models.Chat
+        fields = (
+            "id",
+            "created_at",
+        )
+    def to_representation(self, instance):
+        # Exclude the current user from the serialized data
+        request = self.context.get('request', None)
+        current_user = getattr(request, 'user', None)
+        data = super().to_representation(instance)
+        if instance.first_user == current_user:
+            other_user = instance.second_user
+        elif instance.second_user == current_user:
+            other_user = instance.first_user
+        else:
+            return data
+        data['cantact']= {
+                'id': other_user.id,
+                'username': other_user.username,
+                # Add other user fields as needed
+            }
+        return data
