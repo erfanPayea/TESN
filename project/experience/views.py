@@ -153,10 +153,11 @@ class ViewAPost(APIView):
 
 class ViewFirstSixPosts(APIView):
     def get(self, request, user_id):
-        user = user_models.User.objects.filter(id=user_id).first()
-        if user is None:
+        destination_user = user_models.User.objects.filter(id=user_id).first()
+        if destination_user is None:
             return Response(user_errors.USER_NOT_FOUND.get("data"), user_errors.USER_NOT_FOUND.get("status"))
-        all_posts = user.posts.all()
+
+        all_posts = destination_user.posts.all()
         posts_count = min(6, len(all_posts))
         first_posts = []
         for index in range(0, posts_count):
@@ -167,6 +168,7 @@ class ViewFirstSixPosts(APIView):
             like_post = experience_models.LikePost.objects.filter(destination_post=first_posts[index],
                                                                   owner=request.user)
             data[f"{index}"] = serializers.post_serializer(first_posts[index], like_post is not None)
+
         return Response(data, status.HTTP_200_OK)
 
 
@@ -185,6 +187,28 @@ class ViewAllPosts(APIView):
                                                                   owner=request.user)
             data[f"{index}"] = serializers.post_serializer(all_posts[index], like_post is not None)
         return Response(data, status.HTTP_200_OK)
+
+
+class ViewExplorePosts(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        followings = request.user.followings
+        pre_index = 0
+        first_posts = []
+        for destination_user in followings:
+            all_posts = destination_user.posts.all()
+            posts_count = min(6, len(all_posts))
+            for index in range(0, posts_count):
+                first_posts.append(all_posts[index])
+
+        first_posts.sort(key=lambda post: post.sent_time, reverse=True)
+
+        data = {}
+        for index in range(0, len(first_posts)):
+            like_post = experience_models.LikePost.objects.filter(destination_post=first_posts[index],
+                                                                  owner=request.user)
+            data[f"{index}"] = serializers.post_serializer(first_posts[index - pre_index], like_post is not None)
 
 
 class ViewFirstReview(APIView):
