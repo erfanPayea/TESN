@@ -21,7 +21,7 @@ class Experience(models.Model):
     sent_time = models.DateTimeField(auto_now=True)
     file_path = models.CharField(max_length=50, null=True)
     caption = models.CharField(max_length=500)
-    number_of_likes = models.PositiveIntegerField()
+    number_of_likes = models.PositiveIntegerField(default=0)
 
     class Meta:
         abstract = True
@@ -32,7 +32,7 @@ class Post(Experience):
 
 
 class Review(Experience):
-    owner = models.ForeignKey(user_models.User, null=True, on_delete=models.SET_NULL)
+    owner = models.ForeignKey(user_models.User, null=True, on_delete=models.SET_NULL, related_name='reviews')
     rating = models.PositiveIntegerField()
     attraction = models.ForeignKey(Attraction, null=False, on_delete=models.CASCADE, related_name="reviews")
 
@@ -42,7 +42,7 @@ class Comment(models.Model):
     owner = models.ForeignKey(user_models.User, on_delete=models.CASCADE)
     destination_post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
     sent_time = models.DateTimeField(auto_now=True)
-    number_of_likes = models.PositiveIntegerField()
+    number_of_likes = models.PositiveIntegerField(default=0)
 
 
 class Like(models.Model):

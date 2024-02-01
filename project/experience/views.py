@@ -37,10 +37,10 @@ class Posts(APIView):
         if today_posts >= max_post_per_day:
             return Response(errors.LIMIT_REACHED.get("data"), errors.LIMIT_REACHED.get("status"))
 
-        new_post = experience_models.Post(owner=request.user, attraction=attraction, number_of_likes=0, caption=caption,
+        new_post = experience_models.Post(owner=request.user, attraction=attraction, caption=caption,
                                           file_path=file_path)
         new_post.save()
-        return Response(serializers.post_serializer(new_post, False), status.HTTP_200_OK)
+        return Response({}, status.HTTP_200_OK)
 
 
 class Reviews(APIView):
@@ -69,10 +69,10 @@ class Reviews(APIView):
         if today_reviews >= max_review_per_day:
             return Response(errors.LIMIT_REACHED.get("data"), errors.LIMIT_REACHED.get("status"))
 
-        new_review = experience_models.Review(owner=request.user, attraction=attraction, number_of_likes=0,
+        new_review = experience_models.Review(owner=request.user, attraction=attraction,
                                               caption=caption, file_path=file_path, rating=rating)
         new_review.save()
-        return Response(serializers.review_serializer(new_review, False), status.HTTP_200_OK)
+        return Response({}, status.HTTP_200_OK)
 
 
 class Likes(APIView):
@@ -156,7 +156,7 @@ class Comments(APIView):
         if destination_post is None:
             return Response(errors.POST_NOT_FOUND.get("data"), errors.POST_NOT_FOUND.get("status"))
 
-        new_comment = experience_models.Comment(message=message, destination_post=destination_post, number_of_likes=0,
+        new_comment = experience_models.Comment(message=message, destination_post=destination_post,
                                                 owner=request.user)
         new_comment.save()
         destination_post.save()
@@ -217,7 +217,6 @@ class ViewFirstSixPosts(APIView):
                 data["posts"].append(
                     serializers.post_serializer(first_posts[index], like_post is not None, "No comments yet!"))
 
-        print(data)
         return Response(data, status.HTTP_200_OK)
 
 
@@ -236,7 +235,27 @@ class ViewAllPosts(APIView):
         for index in range(0, len(all_posts)):
             like_post = experience_models.LikePost.objects.filter(destination_post=all_posts[index],
                                                                   owner=request.user).first()
-            data["posts"].append(serializers.post_serializer(all_posts[index], like_post is not None))
+
+            all_comments = all_posts[index].comments.all()
+            maximum = -1
+            best_comment_index = -1
+            for comment_index in range(0, len(all_comments)):
+                if all_comments[comment_index].number_of_likes > maximum:
+                    best_comment_index = comment_index
+
+            if best_comment_index != -1:
+                data["posts"].append(serializers.post_serializer(all_posts[index], like_post is not None,
+                                                                 all_comments[best_comment_index].message))
+            # todo
+            #  : like_comment = experience_models.LikeComment.objects.filter(
+            #     destination_comment=all_comments[best_comment_index], owner=request.user).first()
+            # data["posts"].append(serializers.post_serializer(all_posts[index], like_post is not None,
+            #                                                  all_comments[best_comment_index],
+            #                                                  like_comment is not None))
+
+            else:
+                data["posts"].append(
+                    serializers.post_serializer(all_posts[index], like_post is not None, "No comments yet!"))
 
         return Response(data, status.HTTP_200_OK)
 
@@ -287,6 +306,22 @@ class ViewAllReviews(APIView):
             return Response(errors.ATTRACTION_NOT_FOUND.get("data"), errors.ATTRACTION_NOT_FOUND.get("status"))
 
         all_reviews = attraction.reviews.all()
+        data = {
+            "reviews": []
+        }
+        for index in range(0, len(all_reviews)):
+            like_review = experience_models.LikeReview.objects.filter(
+                destination_review=all_reviews[index], owner=request.user).first()
+            data["reviews"].append(serializers.review_serializer(all_reviews[index], like_review is not None))
+
+        return Response(data, status.HTTP_200_OK)
+
+
+class MyReviews(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        all_reviews = request.user.reviews.all().order_by('-id')
         data = {
             "reviews": []
         }
