@@ -82,3 +82,14 @@ class Chat(APIView):
 
         serialized = self.Serializer(chat)
         return Response(serialized.data, status.HTTP_200_OK)
+
+
+class AllChats(APIView):
+    Serializer = serializers.MultipleChatSerializer
+    Model = models.Chat
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        chats = models.Chat.objects.filter(Q(second_user=request.user) | Q(first_user=request.user)).all()
+        serialized = self.Serializer(chats, many=True, context={'request': request})
+        return Response(serialized.data, status.HTTP_200_OK)
