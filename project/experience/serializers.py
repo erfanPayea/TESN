@@ -32,13 +32,11 @@ def review_serializer(review, do_you_like_it):
 
 
 def comment_serializer(comment, do_you_like_it):
-    if comment == -1:
-        return "No comment yet!"
     return {
         'id': comment.id,
         'message': comment.message,
         'sentTime': comment.sent_time,
-        'owner': comment.owner,
+        'owner': comment.owner.id,
         'numberOfLikes': comment.number_of_likes,
         'doYouLikeIt': do_you_like_it
     }

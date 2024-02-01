@@ -142,6 +142,28 @@ class Likes(APIView):
         return Response({}, status.HTTP_200_OK)
 
 
+class Comments(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        try:
+            destination_post_id = request.data["postId"]
+            message = request.data["message"]
+        except:
+            return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
+
+        destination_post = experience_models.Post.objects.filter(id=destination_post_id).first()
+        if destination_post is None:
+            return Response(errors.POST_NOT_FOUND.get("data"), errors.POST_NOT_FOUND.get("status"))
+
+        new_comment = experience_models.Comment(message=message, destination_post=destination_post, number_of_likes=0,
+                                                owner=request.user)
+        new_comment.save()
+        destination_post.save()
+
+        return Response({}, status.HTTP_200_OK)
+
+
 class ViewAPost(APIView):
     def get(self, request, post_id):
         post = experience_models.Post.objects.filter(id=post_id).first()
@@ -161,13 +183,11 @@ class ViewFirstSixPosts(APIView):
             else:
                 return Response(user_errors.USER_NOT_FOUND.get("data"), user_errors.USER_NOT_FOUND.get("status"))
 
-        all_posts = destination_user.posts.all().order_by('sent_time')
+        all_posts = destination_user.posts.all().order_by('-id')
         posts_count = min(6, len(all_posts))
         first_posts = []
         for index in range(0, posts_count):
             first_posts.append(all_posts[index])
-
-        first_posts.sort(key=lambda post: post.id, reverse=True)
 
         data = {
             'posts': []
@@ -210,7 +230,6 @@ class ViewAllPosts(APIView):
             return Response(user_errors.USER_NOT_FOUND.get("data"), user_errors.USER_NOT_FOUND.get("status"))
 
         all_posts = user.posts.all()
-        all_posts.sort(key=lambda post: post.id, reverse=True)
         data = {
             "posts": []
         }
@@ -218,6 +237,7 @@ class ViewAllPosts(APIView):
             like_post = experience_models.LikePost.objects.filter(destination_post=all_posts[index],
                                                                   owner=request.user).first()
             data["posts"].append(serializers.post_serializer(all_posts[index], like_post is not None))
+
         return Response(data, status.HTTP_200_OK)
 
 
@@ -267,7 +287,6 @@ class ViewAllReviews(APIView):
             return Response(errors.ATTRACTION_NOT_FOUND.get("data"), errors.ATTRACTION_NOT_FOUND.get("status"))
 
         all_reviews = attraction.reviews.all()
-        all_reviews.sort(key=lambda review: review.id, reverse=True)
         data = {
             "reviews": []
         }
@@ -275,6 +294,7 @@ class ViewAllReviews(APIView):
             like_review = experience_models.LikeReview.objects.filter(
                 destination_review=all_reviews[index], owner=request.user).first()
             data["reviews"].append(serializers.review_serializer(all_reviews[index], like_review is not None))
+
         return Response(data, status.HTTP_200_OK)
 
 
@@ -286,8 +306,7 @@ class ViewAllComments(APIView):
         if post is None:
             return Response(errors.POST_NOT_FOUND.get("data"), errors.POST_NOT_FOUND.get("status"))
 
-        all_comments = post.comments.all()
-        all_comments.sort(key=lambda comment: comment.id, reverse=True)
+        all_comments = post.comments.all().order_by('-number_of_likes')
         data = {
             "comments": []
         }
@@ -295,6 +314,7 @@ class ViewAllComments(APIView):
             like_comment = experience_models.LikeComment.objects.filter(destination_comment=all_comments[index],
                                                                         owner=request.user).first()
             data["comments"].append(serializers.comment_serializer(all_comments[index], like_comment is not None))
+
         return Response(data, status.HTTP_200_OK)
 
 
