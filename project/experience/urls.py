@@ -11,7 +11,6 @@ urlpatterns = [
     path('explore', views.ViewExplorePosts.as_view()),
     path('attraction-reviews/<int:attraction_id>', views.ViewFirstReview.as_view()),
     path('all-attraction-reviews/<int:attraction_id>', views.ViewAllReviews.as_view()),
-    path('best-comment/<int:post_id>', views.ViewBestComment.as_view()),
     path('all-comments/<int:post_id>', views.ViewAllComments.as_view()),
     path('cityFallowing', views.CityFallowing.as_view())
 ]

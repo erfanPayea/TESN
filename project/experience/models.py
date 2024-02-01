@@ -38,6 +38,7 @@ class Review(Experience):
 
 
 class Comment(models.Model):
+    message = models.TextField(max_length=500)
     owner = models.ForeignKey(user_models.User, on_delete=models.CASCADE)
     destination_post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
     sent_time = models.DateTimeField(auto_now=True)

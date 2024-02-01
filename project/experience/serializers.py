@@ -1,4 +1,4 @@
-def post_serializer(post, do_you_like_it):
+def post_serializer(post, do_you_like_it, best_comment_message):
     data = {
         'id': post.id,
         'sentTime': post.sent_time,
@@ -7,7 +7,8 @@ def post_serializer(post, do_you_like_it):
         'numberOfLikes': post.number_of_likes,
         'caption': post.caption,
         'filePath': post.file_path,
-        'doYouLikeIt': do_you_like_it
+        'doYouLikeIt': do_you_like_it,
+        'bestCommentMessage': best_comment_message
     }
 
     if post.attraction is not None:
@@ -31,8 +32,11 @@ def review_serializer(review, do_you_like_it):
 
 
 def comment_serializer(comment, do_you_like_it):
+    if comment == -1:
+        return "No comment yet!"
     return {
         'id': comment.id,
+        'message': comment.message,
         'sentTime': comment.sent_time,
         'owner': comment.owner,
         'numberOfLikes': comment.number_of_likes,
