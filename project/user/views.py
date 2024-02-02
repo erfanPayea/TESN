@@ -95,7 +95,7 @@ class Following(APIView):
 
     def get(self, request):
         all_fallowing = models.Followers.objects.filter(follower=request.user).all()
-        serialized = self.Serializer(all_fallowing, many=True)
+        serialized = self.Serializer(all_fallowing, many=True, context={'request': request})
         return Response(serialized.data, status.HTTP_200_OK)
 
     def delete(self, request):
@@ -115,7 +115,7 @@ class Followers(APIView):
 
     def get(self, request):
         all_fallowing = models.Followers.objects.filter(following=request.user).all()
-        serialized = self.Serializer(all_fallowing, many=True)
+        serialized = self.Serializer(all_fallowing, many=True, context={'request': request})
         return Response(serialized.data, status.HTTP_200_OK)
 
 
