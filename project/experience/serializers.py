@@ -14,7 +14,8 @@ def post_serializer(post, do_you_like_it):
         'sentTime': post.sent_time,
         'ownerId': post.owner.id,
         'ownerUsername': post.owner.username,
-        'attraction': None,
+        'attractionId': None,
+        'attractionName': 'No attraction is targeted!',
         'numberOfLikes': post.number_of_likes,
         'caption': post.caption,
         'filePath': post.file_path,
@@ -23,7 +24,8 @@ def post_serializer(post, do_you_like_it):
     }
 
     if post.attraction is not None:
-        data["attraction"] = post.attraction.id
+        data["attractionId"] = post.attraction.id
+        data['attractionName'] = post.attraction.name
 
     return data
 
@@ -34,7 +36,8 @@ def review_serializer(review, do_you_like_it):
         'sentTime': review.sent_time,
         'ownerId': review.owner.id,
         'ownerUsername': review.owner.username,
-        'attraction': attraction_serializer(review.attraction),
+        'attractionId': review.attraction.id,
+        'attractionName': review.attraction.name,
         'rating': review.rating,
         'numberOfLikes': review.number_of_likes,
         'caption': review.caption,
@@ -57,5 +60,6 @@ def comment_serializer(comment, do_you_like_it):
 
 def attraction_serializer(attraction):
     return {
-
+        'id': attraction.id,
+        'name': attraction.name
     }
