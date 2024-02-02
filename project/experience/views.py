@@ -48,14 +48,14 @@ class Reviews(APIView):
 
     def post(self, request):
         try:
-            rating = int(request["rating"])
+            rating = int(request.data["rating"])
             attraction_id = request.data["attractionId"]
             caption = request.data["caption"]
             file_path = request.data["filePath"]
         except:
             return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
 
-        attraction = experience_models.Attraction.objects.filter(id=attraction_id)
+        attraction = experience_models.Attraction.objects.filter(id=attraction_id).first()
         if attraction is None:
             return Response(errors.ATTRACTION_NOT_FOUND.get("data"), errors.ATTRACTION_NOT_FOUND.get("status"))
 
