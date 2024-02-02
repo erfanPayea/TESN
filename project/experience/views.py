@@ -217,6 +217,7 @@ class ViewAllPosts(APIView):
                                                                   owner=request.user).first()
             data['posts'].append(serializers.post_serializer(all_posts[index], like_post is not None))
 
+        print(data['posts'])
         return Response(data, status.HTTP_200_OK)
 
 

@@ -1,4 +1,14 @@
 def post_serializer(post, do_you_like_it):
+    all_comments = post.comments.all().order_by('-number_of_likes')
+    if len(all_comments) > 0:
+        best_comment = comment_serializer(all_comments[0], False)
+    else:
+        best_comment = {
+            'ownerUsername': 'Host',
+            'ownerId': '0',
+            'message': 'No comments yet!',
+            'numberOfLikes': '0'
+        }
     data = {
         'id': post.id,
         'sentTime': post.sent_time,
@@ -8,7 +18,8 @@ def post_serializer(post, do_you_like_it):
         'numberOfLikes': post.number_of_likes,
         'caption': post.caption,
         'filePath': post.file_path,
-        'doYouLikeIt': do_you_like_it
+        'doYouLikeIt': do_you_like_it,
+        'bestComment': best_comment,
     }
 
     if post.attraction is not None:
