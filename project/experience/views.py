@@ -247,15 +247,19 @@ class ViewExplorePosts(APIView):
 
 class ViewFirstReview(APIView):
     def get(self, request, attraction_id):
-        attraction = experience_models.Attraction.objects.filter(id=attraction_id)
+        attraction = experience_models.Attraction.objects.filter(id=attraction_id).first()
         if attraction is None:
             return Response(errors.ATTRACTION_NOT_FOUND.get("data"), errors.ATTRACTION_NOT_FOUND.get("status"))
-        review = experience_models.Review.objects.filter(attraction=attraction).first()
+        review = experience_models.Review.objects.filter(attraction=attraction).order_by('-number_of_likes').first()
         if review is None:
             return Response({}, status.HTTP_200_OK)
 
         like_review = experience_models.LikeReview.objects.filter(destination_review=review, owner=request.user).first()
-        return Response(serializers.review_serializer(review, like_review is not None), status.HTTP_200_OK)
+        data = {
+            'reviews': []
+        }
+        data['reviews'].append(serializers.review_serializer(review, like_review is not None))
+        return Response(data, status.HTTP_200_OK)
 
 
 class ViewAllReviews(APIView):
