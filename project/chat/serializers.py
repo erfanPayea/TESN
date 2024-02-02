@@ -24,15 +24,15 @@ class MessageSerializer(ModelSerializer):
         )
 
 
+# class ChatSerializer(ModelSerializer):
+#     messages = MessageSerializer(many=True, read_only=True)
+#
+#     class Meta:
+#         model = models.Chat
+#         fields = '__all__'
+
+
 class ChatSerializer(ModelSerializer):
-    messages = MessageSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = models.Chat
-        fields = '__all__'
-
-
-class MultipleChatSerializer(ModelSerializer):
     class Meta:
         model = models.Chat
         fields = (

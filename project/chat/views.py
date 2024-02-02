@@ -78,7 +78,7 @@ class Chat(APIView):
             return Response(errors.ALREADY_EXISTS.get("data"), errors.ALREADY_EXISTS.get("status"))
         new_chat = models.Chat(first_user=request.user, second_user=user)
         new_chat.save()
-        serialized = self.Serializer(new_chat)
+        serialized = self.Serializer(new_chat, context={'request': request})
         return Response(serialized.data, status.HTTP_200_OK)
 
     def get(self, request, chat_id=0):
@@ -87,12 +87,12 @@ class Chat(APIView):
         except models.Chat.DoesNotExist:
             return Response(errors.CHAT_NOT_FOUND.get("data"), errors.CHAT_NOT_FOUND.get("status"))
 
-        serialized = self.Serializer(chat)
+        serialized = self.Serializer(chat, context={'request': request})
         return Response(serialized.data, status.HTTP_200_OK)
 
 
 class AllChats(APIView):
-    Serializer = serializers.MultipleChatSerializer
+    Serializer = serializers.ChatSerializer
     Model = models.Chat
     permission_classes = (IsAuthenticated,)
 
