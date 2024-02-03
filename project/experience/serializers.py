@@ -6,6 +6,7 @@ def post_serializer(post, do_you_like_it):
         best_comment = {
             'ownerUsername': 'Host',
             'ownerId': '0',
+            'ownerAvatarPath': None,
             'message': 'No comments yet!',
             'numberOfLikes': '0'
         }
@@ -14,6 +15,7 @@ def post_serializer(post, do_you_like_it):
         'sentTime': post.sent_time,
         'ownerId': post.owner.id,
         'ownerUsername': post.owner.username,
+        'ownerAvatarPath': post.owner.avatar_path,
         'attractionId': None,
         'attractionName': 'No attraction is targeted!',
         'numberOfLikes': post.number_of_likes,
@@ -36,6 +38,7 @@ def review_serializer(review, do_you_like_it):
         'sentTime': review.sent_time,
         'ownerId': review.owner.id,
         'ownerUsername': review.owner.username,
+        'ownerAvatarPath': review.owner.avatar_path,
         'attractionId': review.attraction.id,
         'attractionName': review.attraction.name,
         'rating': review.rating,
@@ -53,6 +56,7 @@ def comment_serializer(comment, do_you_like_it):
         'sentTime': comment.sent_time,
         'ownerId': comment.owner.id,
         'ownerUsername': comment.owner.username,
+        'ownerAvatarPath': comment.owner.avatar_path,
         'numberOfLikes': comment.number_of_likes,
         'doYouLikeIt': do_you_like_it
     }
