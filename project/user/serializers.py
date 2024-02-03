@@ -39,4 +39,5 @@ class UserSerializer(ModelSerializer):
             "phone",
             "date_joined",
             "membership",
+            "avatar_path",
         )
