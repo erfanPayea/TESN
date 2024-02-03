@@ -129,7 +129,10 @@ class Otp(APIView):
         try:
             username = request.data["username"]
         except:
-            username = "user" + str(models.User.objects.latest('id').id + 1)
+            try:  
+                username = "user" + str(models.User.objects.latest('id').id + 1)
+            except:
+                username = "user"
 
         if models.User.objects.filter(username=username).first() is not None:
             return Response(errors.DUPLICATE_USERNAME.get("data"), errors.DUPLICATE_USERNAME.get("status"))
