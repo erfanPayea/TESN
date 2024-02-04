@@ -1,6 +1,3 @@
-from rest_framework.utils import json
-
-
 def post_serializer(post, do_you_like_it):
     all_comments = post.comments.all().order_by('-number_of_likes')
     if len(all_comments) > 0:
@@ -19,12 +16,12 @@ def post_serializer(post, do_you_like_it):
         'sentTime': post.sent_time,
         'ownerId': post.owner.id,
         'ownerUsername': post.owner.username,
-        'ownerAvatarPath': post.owner.avatar_path,
+        'ownerAvatarPath': "http://127.0.0.1:8000/media/" + str(post.owner.avatar_image),
         'attractionId': None,
         'attractionName': 'No attraction is targeted!',
         'numberOfLikes': post.number_of_likes,
         'caption': post.caption,
-        'image': json.dumps(str(post.image)),
+        'image': "http://127.0.0.1:8000/media/" + str(post.image),
         'doYouLikeIt': do_you_like_it,
         'bestComment': best_comment,
     }
@@ -42,13 +39,12 @@ def review_serializer(review, do_you_like_it):
         'sentTime': review.sent_time,
         'ownerId': review.owner.id,
         'ownerUsername': review.owner.username,
-        'ownerAvatarPath': review.owner.avatar_path,
+        'ownerAvatarPath': "http://127.0.0.1:8000/media/" + str(review.owner.avatar_image),
         'attractionId': review.attraction.id,
         'attractionName': review.attraction.name,
         'rating': review.rating,
         'numberOfLikes': review.number_of_likes,
         'caption': review.caption,
-        'image': json.dumps(str(review.image)),
         'doYouLikeIt': do_you_like_it
     }
 
@@ -60,7 +56,7 @@ def comment_serializer(comment, do_you_like_it):
         'sentTime': comment.sent_time,
         'ownerId': comment.owner.id,
         'ownerUsername': comment.owner.username,
-        'ownerAvatarPath': comment.owner.avatar_path,
+        'ownerAvatarPath': "http://127.0.0.1:8000/media/" + str(comment.owner.avatar_image),
         'numberOfLikes': comment.number_of_likes,
         'doYouLikeIt': do_you_like_it
     }

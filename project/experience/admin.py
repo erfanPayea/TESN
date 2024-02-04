@@ -5,3 +5,4 @@ from . import models as experience_models
 admin.site.register(experience_models.City)
 admin.site.register(experience_models.Attraction)
 admin.site.register(experience_models.Post)
+admin.site.register(experience_models.Review)

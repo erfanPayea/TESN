@@ -35,9 +35,8 @@ def userSerializer(user):
         "id": user.id,
         "username": user.username,
         "email": user.email,
-        "avatarPath": user.avatar_path,
         "phone": user.phone,
         "dateJoined": user.date_joined,
         "membership": user.membership,
-        "avatarImage": json.dumps(str(user.avatar_image))
+        "avatarImage": "http://127.0.0.1:8000/media/" + str(user.avatar_image)
     }

@@ -17,9 +17,9 @@ class Posts(APIView):
 
     def post(self, request):
         try:
-            attraction_id = request.data["attractionId"]
-            caption = request.data["caption"]
-            image = request.data["image"]
+            attraction_id = request.POST["attractionId"]
+            caption = request.POST["caption"]
+            image = request.FILES["image"]
         except:
             return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
 
@@ -51,7 +51,6 @@ class Reviews(APIView):
             rating = int(request.data["rating"])
             attraction_id = request.data["attractionId"]
             caption = request.data["caption"]
-            file_path = request.data["filePath"]
         except:
             return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
 
@@ -70,7 +69,7 @@ class Reviews(APIView):
             return Response(errors.LIMIT_REACHED.get("data"), errors.LIMIT_REACHED.get("status"))
 
         new_review = experience_models.Review(owner=request.user, attraction=attraction,
-                                              caption=caption, file_path=file_path, rating=rating)
+                                              caption=caption, rating=rating)
         new_review.save()
         return Response({}, status.HTTP_200_OK)
 

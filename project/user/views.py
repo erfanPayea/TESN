@@ -17,11 +17,11 @@ class Users(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
+        print(request.data)
         try:
             username = request.data["username"]
             password = request.data["password"]
             phone = request.data["phone"]
-            avatar_path = request.data["avatarPath"]
         except:
             return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
 
@@ -33,7 +33,6 @@ class Users(APIView):
         request.user.set_password(password)
         request.user.username = username
         request.user.phone = phone
-        request.user.avatar_path = avatar_path
         request.user.save()
 
         return Response({}, status.HTTP_200_OK)
@@ -120,16 +119,19 @@ class Followers(APIView):
 
 
 class Otp(APIView):
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
+        print(request.FILES)
+        print(request.POST)
         try:
-            email = request.data["email"]
+            email = request.POST["email"]
+            avatar_image = request.FILES["avatarImage"]
         except:
             return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
 
         try:
             username = request.data["username"]
         except:
-            try:  
+            try:
                 username = "user" + str(models.User.objects.latest('id').id + 1)
             except:
                 username = "user"
@@ -140,10 +142,12 @@ class Otp(APIView):
             return Response(errors.DUPLICATE_EMAIL.get("data"), errors.DUPLICATE_EMAIL.get("status"))
 
         user = models.User.objects.create_user(username=username, email=email)
+        user.avatar_image = avatar_image
         user.save()
         otp_passkey = generate_otp()
         models.Otp(user=user, passkey=otp_passkey).save()
         send_otp_email(email, otp_passkey)
+        print("YES!")
         return Response({}, status.HTTP_200_OK)
 
     def patch(self, request):
