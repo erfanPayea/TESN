@@ -215,8 +215,6 @@ class Subscribe(APIView):
         except:
             return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
 
-        # todo : ino khodet neveshti ! :
-        # bank transaction validation needed
         if re.fullmatch("[GBS]", membership):
             request.user.membership = membership
             request.user.save()
