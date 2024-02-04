@@ -18,7 +18,7 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # Expose the port that Django will run on
-EXPOSE 8080
+EXPOSE 8000
 
 # Run Django when the container launches
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8080"]
+#CMD ["python", "manage.py", "runserver", "0.0.0.0:8080"]

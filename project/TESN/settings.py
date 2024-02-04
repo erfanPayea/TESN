@@ -64,9 +64,11 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'TESN.urls'
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-]
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:3000',
+# ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
