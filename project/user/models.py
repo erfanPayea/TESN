@@ -2,6 +2,10 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
+def upload_to(instance, filename):
+    return 'avatars/{filename}'.format(filename=filename)
+
+
 class User(AbstractUser):
     MEMBERSHIP_BRONZE = 'B'
     MEMBERSHIP_SILVER = 'S'
@@ -15,7 +19,7 @@ class User(AbstractUser):
     birth_date = models.DateField(null=True)
     date_joined = models.DateField(auto_now=True)
     membership = models.CharField(max_length=1, choices=MEMBERSHIP_CHOICES, default=MEMBERSHIP_BRONZE)
-    avatar_path = models.CharField(max_length=150, null=True)
+    avatar_image = models.ImageField(upload_to=upload_to, blank=True, null=True)
 
 
 class Otp(models.Model):

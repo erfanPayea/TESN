@@ -19,7 +19,7 @@ class Posts(APIView):
         try:
             attraction_id = request.data["attractionId"]
             caption = request.data["caption"]
-            file_path = request.data["filePath"]
+            image = request.data["image"]
         except:
             return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
 
@@ -38,7 +38,7 @@ class Posts(APIView):
             return Response(errors.LIMIT_REACHED.get("data"), errors.LIMIT_REACHED.get("status"))
 
         new_post = experience_models.Post(owner=request.user, attraction=attraction, caption=caption,
-                                          file_path=file_path)
+                                          image=image)
         new_post.save()
         return Response({}, status.HTTP_200_OK)
 

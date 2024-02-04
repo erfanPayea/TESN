@@ -1,9 +1,13 @@
+from rest_framework.utils import json
+
+
 def post_serializer(post, do_you_like_it):
     all_comments = post.comments.all().order_by('-number_of_likes')
     if len(all_comments) > 0:
         best_comment = comment_serializer(all_comments[0], False)
     else:
         best_comment = {
+            'id': -1,
             'ownerUsername': 'Host',
             'ownerId': '0',
             'ownerAvatarPath': None,
@@ -20,7 +24,7 @@ def post_serializer(post, do_you_like_it):
         'attractionName': 'No attraction is targeted!',
         'numberOfLikes': post.number_of_likes,
         'caption': post.caption,
-        'filePath': post.file_path,
+        'image': json.dumps(str(post.image)),
         'doYouLikeIt': do_you_like_it,
         'bestComment': best_comment,
     }
@@ -44,7 +48,7 @@ def review_serializer(review, do_you_like_it):
         'rating': review.rating,
         'numberOfLikes': review.number_of_likes,
         'caption': review.caption,
-        'filePath': review.file_path,
+        'image': json.dumps(str(review.image)),
         'doYouLikeIt': do_you_like_it
     }
 

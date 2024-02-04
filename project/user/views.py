@@ -15,13 +15,13 @@ from .otp import generate_otp, send_otp_email
 
 class Users(APIView):
     permission_classes = (IsAuthenticated,)
-    Serializer = serializers.UserSerializer
 
     def post(self, request):
         try:
             username = request.data["username"]
             password = request.data["password"]
             phone = request.data["phone"]
+            avatar_path = request.data["avatarPath"]
         except:
             return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
 
@@ -33,13 +33,13 @@ class Users(APIView):
         request.user.set_password(password)
         request.user.username = username
         request.user.phone = phone
+        request.user.avatar_path = avatar_path
         request.user.save()
 
         return Response({}, status.HTTP_200_OK)
 
     def get(self, request):
-        serialized = self.Serializer(request.user)
-        return Response(serialized.data, status.HTTP_200_OK)
+        return Response(serializers.userSerializer(request.user), status.HTTP_200_OK)
 
     def patch(self, request):
         try:

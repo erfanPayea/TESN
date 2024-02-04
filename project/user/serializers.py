@@ -1,4 +1,5 @@
 from rest_framework.serializers import ModelSerializer
+from rest_framework.utils import json
 
 from . import models
 
@@ -29,15 +30,14 @@ class Follower(ModelSerializer):
         return data
 
 
-class UserSerializer(ModelSerializer):
-    class Meta:
-        model = models.User
-        fields = (
-            "email",
-            "username",
-            "id",
-            "phone",
-            "date_joined",
-            "membership",
-            "avatar_path",
-        )
+def userSerializer(user):
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "avatarPath": user.avatar_path,
+        "phone": user.phone,
+        "dateJoined": user.date_joined,
+        "membership": user.membership,
+        "avatarImage": json.dumps(str(user.avatar_image))
+    }
