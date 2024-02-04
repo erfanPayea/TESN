@@ -1,7 +1,11 @@
-def post_serializer(post, do_you_like_it):
+from . import models
+
+
+def post_serializer(user, post, do_you_like_it):
     all_comments = post.comments.all().order_by('-number_of_likes')
     if len(all_comments) > 0:
-        best_comment = comment_serializer(all_comments[0], False)
+        like_comment = models.LikeComment.objects.filter(owner=user, destination_comment=all_comments[0]).first()
+        best_comment = comment_serializer(all_comments[0], like_comment is not None)
     else:
         best_comment = {
             'id': -1,

@@ -53,6 +53,15 @@ class Users(APIView):
         return Response({}, status.HTTP_200_OK)
 
 
+class UserDetails(APIView):
+    def get(self, request, user_id):
+        try:
+            destination_user = models.User.objects.get(id=user_id)
+        except:
+            return Response(errors.USER_NOT_FOUND.get("data"), errors.USER_NOT_FOUND.get("status"))
+        return Response(serializers.userSerializer(destination_user), status.HTTP_200_OK)
+
+
 class Token(APIView):
     def post(self, request):
         try:
@@ -67,7 +76,7 @@ class Token(APIView):
         if se.is_valid():
             user = se.validated_data["user"]
             token, created = RestToken.objects.get_or_create(user=user)
-            return Response({"token": token.key}, status.HTTP_200_OK)
+            return Response({"token": token.key, "id": user.id}, status.HTTP_200_OK)
         else:
             return Response(errors.WRONG_PASSWORD.get("data"), errors.WRONG_PASSWORD.get("status"))
 
@@ -194,7 +203,7 @@ class OtpValidator(APIView):
         user.otp.save()
 
         token, created = RestToken.objects.get_or_create(user=user)
-        return Response({'token': token.key}, status=status.HTTP_200_OK)
+        return Response({'token': token.key, 'id': user.id}, status=status.HTTP_200_OK)
 
 
 class Subscribe(APIView):

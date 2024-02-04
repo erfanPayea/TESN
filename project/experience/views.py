@@ -125,7 +125,7 @@ class Likes(APIView):
                 return Response(errors.COMMENT_NOT_FOUND.get("data"), errors.COMMENT_NOT_FOUND.get("status"))
 
             like_comment = experience_models.LikeComment.objects.filter(destination_comment=destination_comment,
-                                                                        owner=request.user)
+                                                                        owner=request.user).first()
             if like_comment is None:
                 new_like_comment = experience_models.LikeComment(owner=request.user,
                                                                  destination_comment=destination_comment)
@@ -169,7 +169,7 @@ class ViewAPost(APIView):
             return Response(errors.POST_NOT_FOUND.get("data"), errors.POST_NOT_FOUND.get("status"))
 
         like_post = experience_models.LikePost.objects.filter(destination_post=post, owner=request.user)
-        return Response(serializers.post_serializer(post, like_post is not None), status.HTTP_200_OK)
+        return Response(serializers.post_serializer(request.user, post, like_post is not None), status.HTTP_200_OK)
 
 
 class ViewFirstSixPosts(APIView):
@@ -193,7 +193,7 @@ class ViewFirstSixPosts(APIView):
         for index in range(0, posts_count):
             like_post = experience_models.LikePost.objects.filter(destination_post=first_posts[index],
                                                                   owner=request.user).first()
-            data['posts'].append(serializers.post_serializer(first_posts[index], like_post is not None))
+            data['posts'].append(serializers.post_serializer(request.user, first_posts[index], like_post is not None))
 
         return Response(data, status.HTTP_200_OK)
 
@@ -213,7 +213,7 @@ class ViewAllPosts(APIView):
         for index in range(0, len(all_posts)):
             like_post = experience_models.LikePost.objects.filter(destination_post=all_posts[index],
                                                                   owner=request.user).first()
-            data['posts'].append(serializers.post_serializer(all_posts[index], like_post is not None))
+            data['posts'].append(serializers.post_serializer(request.user, all_posts[index], like_post is not None))
 
         return Response(data, status.HTTP_200_OK)
 
@@ -239,7 +239,7 @@ class ViewExplorePosts(APIView):
         for index in range(0, len(first_posts)):
             like_post = experience_models.LikePost.objects.filter(destination_post=first_posts[index],
                                                                   owner=request.user).first()
-            data["posts"].append(serializers.post_serializer(first_posts[index - pre_index], like_post is not None))
+            data["posts"].append(serializers.post_serializer(request.user, first_posts[index - pre_index], like_post is not None))
 
 
 class ViewFirstReview(APIView):
