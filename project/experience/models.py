@@ -12,14 +12,14 @@ class Attraction(models.Model):
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=500)
     city = models.ForeignKey(City, null=True, on_delete=models.SET_NULL, related_name="attractions")
-    path = models.CharField(max_length=50)
+    path = models.CharField(max_length=150)
 
 
 class Experience(models.Model):
     owner = models.ForeignKey(user_models.User, on_delete=models.CASCADE, related_name="posts")
     attraction = models.ForeignKey(Attraction, null=True, on_delete=models.SET_NULL)
     sent_time = models.DateTimeField(auto_now=True)
-    file_path = models.CharField(max_length=50, null=True)
+    file_path = models.CharField(max_length=150, null=True)
     caption = models.CharField(max_length=500)
     number_of_likes = models.PositiveIntegerField(default=0)
 

@@ -7,8 +7,9 @@ class UserSerializer(ModelSerializer):
     class Meta:
         model = user_models.User
         fields = (
-            "username",
             "id",
+            "username",
+            "avatar_path",
         )
 
 
@@ -24,14 +25,6 @@ class MessageSerializer(ModelSerializer):
         )
 
 
-# class ChatSerializer(ModelSerializer):
-#     messages = MessageSerializer(many=True, read_only=True)
-#
-#     class Meta:
-#         model = models.Chat
-#         fields = '__all__'
-
-
 class ChatSerializer(ModelSerializer):
     class Meta:
         model = models.Chat
@@ -39,6 +32,7 @@ class ChatSerializer(ModelSerializer):
             "id",
             "created_at",
         )
+
     def to_representation(self, instance):
         # Exclude the current user from the serialized data
         request = self.context.get('request', None)
@@ -50,9 +44,9 @@ class ChatSerializer(ModelSerializer):
             other_user = instance.first_user
         else:
             return data
-        data['cantact']= {
-                'id': other_user.id,
-                'username': other_user.username,
-                # Add other user fields as needed
-            }
+        data['cantact'] = {
+            'id': other_user.id,
+            'username': other_user.username,
+            'avatar_path': other_user.avatar_path
+        }
         return data

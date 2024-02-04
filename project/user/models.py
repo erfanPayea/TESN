@@ -15,7 +15,7 @@ class User(AbstractUser):
     birth_date = models.DateField(null=True)
     date_joined = models.DateField(auto_now=True)
     membership = models.CharField(max_length=1, choices=MEMBERSHIP_CHOICES, default=MEMBERSHIP_BRONZE)
-    avatar_path = models.CharField(max_length=50, null=True)
+    avatar_path = models.CharField(max_length=150, null=True)
 
 
 class Otp(models.Model):
