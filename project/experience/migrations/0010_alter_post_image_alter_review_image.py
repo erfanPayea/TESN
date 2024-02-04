@@ -14,11 +14,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='post',
             name='image',
-            field=models.ImageField(blank=True, null=True, upload_to=experience.models.upload_to),
+            field=models.ImageField(blank=True, null=True, upload_to=experience.models.upload_to_posts),
         ),
         migrations.AlterField(
             model_name='review',
             name='image',
-            field=models.ImageField(blank=True, null=True, upload_to=experience.models.upload_to),
+            field=models.ImageField(blank=True, null=True, upload_to=experience.models.upload_to_posts),
         ),
     ]

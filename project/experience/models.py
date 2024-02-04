@@ -3,8 +3,12 @@ from django.db import models
 from user import models as user_models
 
 
-def upload_to(instance, filename):
-    return 'experiences/{filename}'.format(filename=filename)
+def upload_to_posts(instance, filename):
+    return 'posts/{filename}'.format(filename=filename)
+
+
+def upload_to_attractions(instance, filename):
+    return 'attractions/{filename}'.format(filename=filename)
 
 
 class City(models.Model):
@@ -17,13 +21,14 @@ class Attraction(models.Model):
     description = models.CharField(max_length=500)
     city = models.ForeignKey(City, null=True, on_delete=models.SET_NULL, related_name="attractions")
     path = models.CharField(max_length=150)
+    image = models.ImageField(upload_to=upload_to_attractions, blank=True, null=True)
 
 
 class Experience(models.Model):
     owner = models.ForeignKey(user_models.User, on_delete=models.CASCADE, related_name="posts")
     attraction = models.ForeignKey(Attraction, null=True, on_delete=models.SET_NULL)
     sent_time = models.DateTimeField(auto_now=True)
-    image = models.ImageField(upload_to=upload_to, blank=True, null=True)
+    image = models.ImageField(upload_to=upload_to_posts, blank=True, null=True)
     caption = models.CharField(max_length=500)
     number_of_likes = models.PositiveIntegerField(default=0)
 

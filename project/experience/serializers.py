@@ -69,5 +69,15 @@ def comment_serializer(comment, do_you_like_it):
 def attraction_serializer(attraction):
     return {
         'id': attraction.id,
-        'name': attraction.name
+        'name': attraction.name,
+        'description': attraction.description,
+        'image': "http://127.0.0.1:8000/media/" + str(attraction.image),
+    }
+
+
+def city_serializer(city):
+    return {
+        'id': city.id,
+        'name': city.name,
+        'description': city.description
     }

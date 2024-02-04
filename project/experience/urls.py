@@ -14,5 +14,7 @@ urlpatterns = [
     path('all-attraction-reviews/<int:attraction_id>', views.ViewAllReviews.as_view()),
     path('my-reviews', views.MyReviews.as_view()),
     path('all-comments/<int:post_id>', views.ViewAllComments.as_view()),
+    path('all-cities', views.Cities.as_view()),
+    path('city-attractions/<int:city_number>', views.Attractions.as_view()),
     path('cityFallowing', views.CityFallowing.as_view())
 ]

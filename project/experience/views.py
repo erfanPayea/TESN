@@ -239,7 +239,8 @@ class ViewExplorePosts(APIView):
         for index in range(0, len(first_posts)):
             like_post = experience_models.LikePost.objects.filter(destination_post=first_posts[index],
                                                                   owner=request.user).first()
-            data["posts"].append(serializers.post_serializer(request.user, first_posts[index - pre_index], like_post is not None))
+            data["posts"].append(
+                serializers.post_serializer(request.user, first_posts[index - pre_index], like_post is not None))
 
 
 class ViewFirstReview(APIView):
@@ -331,3 +332,31 @@ class CityFallowing(APIView):
             new_following = experience_models.CityFollowings(follower=request.user, following=to_be_subscribed)
             new_following.save()
             return Response({}, status.HTTP_200_OK)
+
+
+class Cities(APIView):
+    def get(self, request):
+        all_cities = experience_models.City.objects.all().order_by("-id")
+        data = {
+            "cities": []
+        }
+        for index in range(0, len(all_cities)):
+            data["cities"].append(serializers.attraction_serializer(all_cities[index]))
+
+
+class Attractions(APIView):
+    def get(self, request, city_id):
+        try:
+            destination_city = experience_models.City.objects.get(id=city_id)
+        except:
+            return Response(errors.INVALID_ARGUMENTS.get("data"), errors.INVALID_ARGUMENTS.get("status"))
+
+        data = {
+            "attractions": []
+        }
+
+        all_attractions = destination_city.attractions.all().order_by("-id")
+        for index in range(0, len(all_attractions)):
+            data["attractions"].append(serializers.attraction_serializer(all_attractions[index]))
+
+        return Response(data, status.HTTP_200_OK)
