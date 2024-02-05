@@ -9,7 +9,7 @@ class UserSerializer(ModelSerializer):
         fields = (
             "id",
             "username",
-            "avatar_path",
+            "avatar_image",
         )
 
 
@@ -47,6 +47,6 @@ class ChatSerializer(ModelSerializer):
         data['cantact'] = {
             'id': other_user.id,
             'username': other_user.username,
-            'avatar_path': other_user.avatar_path
+            'avatarImage': "http://127.0.0.1:8000/media/" + str(other_user.avatar_image)
         }
         return data

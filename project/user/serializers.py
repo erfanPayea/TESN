@@ -25,12 +25,13 @@ class Follower(ModelSerializer):
         data['cantact'] = {
             'id': other_user.id,
             'username': other_user.username,
+            'avatarImage': "http://127.0.0.1:8000/media/" + str(other_user.avatar_image)
             # Add other user fields as needed
         }
         return data
 
 
-def userSerializer(user):
+def user_serializer(user):
     return {
         "id": user.id,
         "username": user.username,

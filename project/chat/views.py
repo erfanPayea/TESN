@@ -99,4 +99,5 @@ class AllChats(APIView):
     def get(self, request):
         chats = models.Chat.objects.filter(Q(second_user=request.user) | Q(first_user=request.user)).all()
         serialized = self.Serializer(chats, many=True, context={'request': request})
+        print(serialized.data)
         return Response(serialized.data, status.HTTP_200_OK)

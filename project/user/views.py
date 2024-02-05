@@ -38,7 +38,7 @@ class Users(APIView):
         return Response({}, status.HTTP_200_OK)
 
     def get(self, request):
-        return Response(serializers.userSerializer(request.user), status.HTTP_200_OK)
+        return Response(serializers.user_serializer(request.user), status.HTTP_200_OK)
 
     def patch(self, request):
         try:
@@ -59,7 +59,7 @@ class UserDetails(APIView):
             destination_user = models.User.objects.get(id=user_id)
         except:
             return Response(errors.USER_NOT_FOUND.get("data"), errors.USER_NOT_FOUND.get("status"))
-        return Response(serializers.userSerializer(destination_user), status.HTTP_200_OK)
+        return Response(serializers.user_serializer(destination_user), status.HTTP_200_OK)
 
 
 class Token(APIView):
@@ -104,6 +104,7 @@ class Following(APIView):
     def get(self, request):
         all_fallowing = models.Followers.objects.filter(follower=request.user).all()
         serialized = self.Serializer(all_fallowing, many=True, context={'request': request})
+        print(serialized.data)
         return Response(serialized.data, status.HTTP_200_OK)
 
     def delete(self, request):
