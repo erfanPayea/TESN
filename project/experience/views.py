@@ -249,13 +249,15 @@ class ViewFirstReview(APIView):
         if attraction is None:
             return Response(errors.ATTRACTION_NOT_FOUND.get("data"), errors.ATTRACTION_NOT_FOUND.get("status"))
         review = experience_models.Review.objects.filter(attraction=attraction).order_by('-number_of_likes').first()
+        data = {
+            'reviews': [],
+            'size': 0
+        }
         if review is None:
-            return Response({}, status.HTTP_200_OK)
+            return Response(data, status.HTTP_200_OK)
+        data['size'] = 1
 
         like_review = experience_models.LikeReview.objects.filter(destination_review=review, owner=request.user).first()
-        data = {
-            'reviews': []
-        }
         data['reviews'].append(serializers.review_serializer(review, like_review is not None))
         return Response(data, status.HTTP_200_OK)
 
@@ -270,7 +272,8 @@ class ViewAllReviews(APIView):
 
         all_reviews = attraction.reviews.all()
         data = {
-            "reviews": []
+            "reviews": [],
+            "size": len(all_reviews)
         }
         for index in range(0, len(all_reviews)):
             like_review = experience_models.LikeReview.objects.filter(
@@ -286,7 +289,8 @@ class MyReviews(APIView):
     def get(self, request):
         all_reviews = request.user.reviews.all().order_by('-id')
         data = {
-            "reviews": []
+            "reviews": [],
+            "size": len(all_reviews)
         }
         for index in range(0, len(all_reviews)):
             like_review = experience_models.LikeReview.objects.filter(
@@ -341,7 +345,9 @@ class Cities(APIView):
             "cities": []
         }
         for index in range(0, len(all_cities)):
-            data["cities"].append(serializers.attraction_serializer(all_cities[index]))
+            data["cities"].append(serializers.city_serializer(all_cities[index]))
+
+        return Response(data, status.HTTP_200_OK)
 
 
 class Attractions(APIView):
